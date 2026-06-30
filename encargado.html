@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Encargado - Sistema Almacén</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: {
+        primary: { DEFAULT: '#0D3B85', light: '#1A56B4', dark: '#0a2d66' }
+      }}}
+    }
+  </script>
+  <style>
+    html { zoom: 1; width: 100%; }
+    * { -webkit-tap-highlight-color: transparent; }
+    body { width: 100vw; max-width: 100vw; overflow-x: hidden; }
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    @media (max-width: 640px) {
+      button { min-height: 40px; }
+      input, select, textarea { font-size: 16px !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F0F2F5] dark:bg-gray-950 text-[#212529] dark:text-white transition-colors duration-300">
+
+  <!-- OVERLAY CARGA INICIAL -->
+  <div id="loadingOverlay" class="fixed inset-0 z-[100] bg-white dark:bg-gray-950 flex flex-col items-center justify-center gap-4">
+    <div class="w-12 h-12 rounded-2xl flex items-center justify-center" style="background-color:#0D3B85">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m-8-4V7m8 4v10"/>
+      </svg>
+    </div>
+    <svg class="animate-spin h-6 w-6 text-[#0D3B85]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+    </svg>
+    <p class="text-sm text-gray-400">Cargando sistema...</p>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-sm px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color:#0D3B85">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m-8-4V7m8 4v10"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold leading-none">Sistema Almacén</p>
+        <p class="text-xs text-gray-400 mt-0.5">Encargado: <span id="navNombre"></span></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+        <svg id="iconSun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.71.71M6.34 17.66l-.71.71m12.73 0-.71-.71M6.34 6.34l-.71-.71M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+        </svg>
+        <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#0D3B85]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <button onclick="cerrarSesion()" class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
+        </svg>
+        Salir
+      </button>
+    </div>
+  </nav>
+
+  <div id="mainScroll" style="height:calc(100vh - 57px);overflow-y:auto;overflow-x:hidden;">
+  <main class="max-w-7xl mx-auto px-4 py-6 pb-12">
+
+    <!-- PANEL ESTADO PERSONAL -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm mb-5 overflow-hidden">
+      <button onclick="toggleEstadoPersonal()"
+        class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#0D3B85]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>
+          </svg>
+          <span class="text-sm font-semibold">Estado del Personal</span>
+          <span id="badgePersonal" class="px-2 py-0.5 rounded-full text-xs font-medium bg-[#0D3B85] text-white hidden"></span>
+        </div>
+        <svg id="chevronPersonal" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </button>
+      <div id="panelPersonal" class="hidden border-t border-gray-100 dark:border-gray-800 px-4 pb-4 pt-3">
+        <div id="contenidoPersonal" class="text-sm text-gray-400 text-center py-4">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="flex gap-1 mb-5 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-sm">
+      <button id="tabBtnOrdenes" onclick="cambiarTab('ordenes')" class="flex-1 py-2 rounded-lg text-sm font-semibold transition">Notas de Entrega</button>
+      <button id="tabBtnEntregas" onclick="cambiarTab('entregas')" class="flex-1 py-2 rounded-lg text-sm font-semibold transition">Entregas de Mercancía</button>
+    </div>
+
+    <!-- TAB NOTAS DE ENTREGA -->
+    <div id="tabOrdenes">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-bold">Notas de Entrega</h2>
+          <p class="text-sm text-gray-400">Órdenes de pedido — delegadas a operarios</p>
+        </div>
+        <button onclick="abrirModalNueva()"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 active:scale-95"
+          style="background-color:#0D3B85">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Nueva Orden
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 mb-4 flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[140px]">
+          <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z"/>
+            </svg>
+          </span>
+          <input id="filtroNumero" type="text" placeholder="N° Orden..."
+            class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"
+            oninput="filtrarOrdenes()"/>
+        </div>
+        <div class="relative flex-1 min-w-[130px]">
+          <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-xs font-mono font-bold">OF</span>
+          <input id="filtroOF" type="text" placeholder="N° OF..."
+            class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"
+            oninput="filtrarOrdenes()"/>
+        </div>
+        <select id="filtroEstado" onchange="filtrarOrdenes()"
+          class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+          <option value="">Todos los estados</option>
+          <option value="Registrada">Registrada</option>
+          <option value="Pendiente_De_Asignación">Pend. Asignación</option>
+          <option value="Asignada">Asignada</option>
+          <option value="En_Progreso">En Progreso</option>
+          <option value="Pausada">Pausada</option>
+          <option value="Completada">Completada</option>
+          <option value="Rechazada">Rechazada</option>
+          <option value="Erronea">Errónea</option>
+        </select>
+        <button onclick="recargarTodo()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+          </svg>
+          Recargar
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:900px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Orden</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">OF</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Área</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Operario</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Creación</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaBody">
+              <tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">Cargando órdenes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB ENTREGAS DE MERCANCÍA -->
+    <div id="tabEntregas" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-bold">Entregas de Mercancía</h2>
+          <p class="text-sm text-gray-400">Documento 18 — sin delegación a operario</p>
+        </div>
+        <button onclick="abrirModalNuevaEntrega()"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 active:scale-95 bg-teal-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Nueva Entrega
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 mb-4 flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[140px]">
+          <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z"/>
+            </svg>
+          </span>
+          <input id="filtroNumeroEntrega" type="text" placeholder="N° Entrega..."
+            class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"
+            oninput="filtrarEntregas()"/>
+        </div>
+        <select id="filtroEstadoEntrega" onchange="filtrarEntregas()"
+          class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+          <option value="">Todos los estados</option>
+          <option value="Iniciada">Iniciada</option>
+          <option value="Completada">Completada</option>
+        </select>
+        <button onclick="recargarTodo()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+          </svg>
+          Recargar
+        </button>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:700px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Entrega</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Inicio</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Final</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaBodyEntregas">
+              <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">Cargando entregas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  </div>
+
+  <!-- MODAL ORDEN (multipropósito) -->
+  <div id="modalOrden" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal()"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="modalTitulo" class="text-base font-bold">Nueva Orden</h3>
+        <button onclick="cerrarModal()" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">N° Pedido</label>
+          <input id="modalNumero" type="text" placeholder="Ej. 80656968"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Encargado</label>
+          <div class="px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500">
+            <span id="modalEncargado"></span>
+          </div>
+        </div>
+        <div id="camposEtapa">
+          <label class="block text-sm font-medium mb-2">Etapa</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="etapa" value="Inicio" id="radioInicio" onchange="onEtapaChange()" class="accent-[#0D3B85]" checked/>
+              <span class="text-sm">Inicio de Tratamiento</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="etapa" value="Final" id="radioFinal" onchange="onEtapaChange()" class="accent-[#0D3B85]"/>
+              <span class="text-sm">Final de Tratamiento</span>
+            </label>
+          </div>
+        </div>
+        <div id="campoOF">
+          <label class="block text-sm font-medium mb-1">O.F. <span class="text-gray-400 font-normal">(5 dígitos)</span></label>
+          <div class="flex items-center gap-0">
+            <span class="px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm text-gray-500 font-mono whitespace-nowrap">40000</span>
+            <input id="modalOF" type="text" inputmode="numeric" maxlength="5" placeholder="00000"
+              class="w-full px-3 py-2.5 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"
+              oninput="this.value=this.value.replace(/\D/g,'').slice(0,5)"/>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Dejar vacío si no aplica</p>
+        </div>
+        <div id="camposFinal" class="hidden space-y-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Área de Trabajo <span class="text-red-500">*</span></label>
+            <select id="modalArea" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+              <option value="">Selecciona un área</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Operario Asignado</label>
+            <select id="modalOperario" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+              <option value="">Sin asignar (quedará pendiente)</option>
+            </select>
+          </div>
+        </div>
+        <div id="modalError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+          <span id="modalErrorText"></span>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="cerrarModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button id="btnGuardar" onclick="guardarOrden()"
+          class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 active:scale-95 flex items-center justify-center gap-2"
+          style="background-color:#0D3B85">
+          <span id="btnGuardarTexto">Guardar</span>
+          <svg id="btnGuardarSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ENTREGA DE MERCANCÍA -->
+  <div id="modalEntrega" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModalEntrega()"></div>
+    <div class="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-bold">Nueva Entrega de Mercancía</h3>
+        <button onclick="cerrarModalEntrega()" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">N° Entrega (Doc. 18)</label>
+          <input id="modalNumeroEntrega" type="text" placeholder="Ej. 18-0001"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Encargado</label>
+          <div class="px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500">
+            <span id="modalEntregaEncargado"></span>
+          </div>
+        </div>
+        <div id="modalEntregaError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+          <span id="modalEntregaErrorText"></span>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="cerrarModalEntrega()" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button id="btnGuardarEntrega" onclick="guardarEntrega()"
+          class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 bg-teal-600">
+          <span id="btnGuardarEntregaTexto">Iniciar</span>
+          <svg id="btnGuardarEntregaSpinner" class="hidden animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-6 right-4 z-50 hidden">
+    <div id="toastInner" class="flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white">
+      <span id="toastMsg"></span>
+    </div>
+  </div>
+
+  <script>
+    // ── SUPABASE ────────────────────────────────────────────────
+    const SB_URL  = 'https://mwivnsbybzsivicrrbpd.supabase.co';
+    const SB_KEY  = 'sb_publishable_O0H19Ni20_MsQ7kYsRtlHA_AJ250EKE';
+    const SB_HDR  = { 'Content-Type':'application/json', 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+    async function sbGet(table, params='') {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}${params?'?'+params:''}`, { headers: SB_HDR });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+    async function sbPost(table, body) {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+        method:'POST', headers:{...SB_HDR,'Prefer':'return=representation'}, body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+    async function sbPatch(table, params, body) {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, {
+        method:'PATCH', headers:{...SB_HDR,'Prefer':'return=representation'}, body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+    const now = () => new Date().toISOString();
+
+    // ── ESTADO ─────────────────────────────────────────────────
+    let sesion = null, ordenesData = [], entregasData = [];
+    let modoModal = 'nueva', ordenEditando = null;
+    let panelPersonalAbierto = false;
+    const INACTIVITY_MS = 4 * 60 * 60 * 1000;
+
+    const BADGE = {
+      Registrada:'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      Pendiente_De_Asignación:'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+      Asignada:'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+      En_Progreso:'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      Pausada:'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      Completada:'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300',
+      Rechazada:'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      Erronea:'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+    };
+    const LABEL = {
+      Registrada:'Registrada', Pendiente_De_Asignación:'Pend. Asignación',
+      Asignada:'Asignada', En_Progreso:'En Progreso', Pausada:'Pausada',
+      Completada:'Completada', Rechazada:'Rechazada', Erronea:'Errónea'
+    };
+    const BADGE_E = {
+      Iniciada:'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      Completada:'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300'
+    };
+    const ESTADOS_ACTIVOS = ['Registrada','Pendiente_De_Asignación','Asignada','En_Progreso','Pausada'];
+
+    // ── INIT ───────────────────────────────────────────────────
+    function init() {
+      applyTheme(localStorage.getItem('theme') === 'dark');
+      const raw = localStorage.getItem('usuario');
+      if (!raw) { redirigirLogin(); return; }
+      sesion = JSON.parse(raw);
+      if (sesion.rol !== 'Encargado' && sesion.rol !== 'Admin') { redirigirLogin(); return; }
+      document.getElementById('navNombre').textContent = sesion.nombres || sesion.usuario;
+      actualizarActividad();
+      cargarTodo();
+      setInterval(cargarTodo, 60000);
+      setInterval(() => {
+        if (Date.now() - parseInt(localStorage.getItem('lastActivity')||'0') > INACTIVITY_MS) {
+          forzarLogout('Sesión cerrada por inactividad.');
+        }
+      }, 60000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) verificarSesion(); });
+    }
+
+    function verificarSesion() {
+      if (!localStorage.getItem('usuario')) redirigirLogin();
+    }
+
+    // ── CARGA DE DATOS ─────────────────────────────────────────
+    async function cargarTodo() {
+      try {
+        const [ordenes, entregas, areasRaw, operariosRaw] = await Promise.all([
+          sbGet('ordenes', 'order=created_at.desc'),
+          sbGet('entregas', 'order=created_at.desc'),
+          sbGet('areas', 'order=nombre.asc'),
+          sbGet('usuarios', 'rol=eq.Operario&activo=eq.true&select=usuario,nombres&order=nombres.asc'),
+        ]);
+        ordenesData  = ordenes.map(normalizeOrden);
+        entregasData = entregas.map(normalizeEntrega);
+        poblarSelectores(areasRaw.map(a=>a.nombre), operariosRaw);
+        renderEstadoPersonal();
+        filtrarOrdenes();
+        filtrarEntregas();
+        ocultarOverlay();
+      } catch(e) {
+        ocultarOverlay();
+        mostrarToast('Error al cargar datos', 'error');
+      }
+    }
+
+    // Normaliza campos de Supabase (snake_case) al formato que usa el HTML
+    function normalizeOrden(o) {
+      return {
+        numero: o.numero_orden,
+        usuarioEncargado: o.usuario_encargado,
+        area: o.area,
+        usuarioAsignado: o.usuario_asignado,
+        estado: o.estado,
+        of: o.of,
+        timestampCreacion: o.created_at,
+        inicioEncargado: o.inicio_encargado,
+        finalEncargado: o.final_encargado,
+      };
+    }
+    function normalizeEntrega(e) {
+      return {
+        numero: e.numero_entrega,
+        usuarioEncargado: e.usuario_encargado,
+        estado: e.estado,
+        inicio: e.inicio,
+        final: e.final,
+        timestampCreacion: e.created_at,
+      };
+    }
+
+    function recargarTodo() { cargarTodo(); }
+    function ocultarOverlay() { const el = document.getElementById('loadingOverlay'); if (el) el.style.display = 'none'; }
+
+    function poblarSelectores(areas, operarios) {
+      const selArea = document.getElementById('modalArea');
+      const vA = selArea.value;
+      selArea.innerHTML = '<option value="">Selecciona un área</option>';
+      areas.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; selArea.appendChild(o); });
+      if (vA) selArea.value = vA;
+
+      const selOp = document.getElementById('modalOperario');
+      const vO = selOp.value;
+      selOp.innerHTML = '<option value="">Sin asignar (quedará pendiente)</option>';
+      operarios.forEach(op => { const opt = document.createElement('option'); opt.value = op.usuario; opt.textContent = op.nombres; selOp.appendChild(opt); });
+      if (vO) selOp.value = vO;
+    }
+
+    // ── SESIÓN ─────────────────────────────────────────────────
+    function actualizarActividad() {
+      localStorage.setItem('lastActivity', Date.now());
+      ['click','keydown','touchstart'].forEach(ev =>
+        document.addEventListener(ev, () => localStorage.setItem('lastActivity', Date.now()), { passive: true })
+      );
+    }
+    function forzarLogout(msg) {
+      localStorage.removeItem('usuario'); localStorage.removeItem('lastActivity');
+      sessionStorage.setItem('logoutMsg', msg);
+      window.location.href = 'index.html';
+    }
+    function redirigirLogin() { window.location.href = 'index.html'; }
+    function cerrarSesion() {
+      localStorage.removeItem('usuario'); localStorage.removeItem('lastActivity');
+      window.location.href = 'login.html';
+    }
+
+    // ── TEMA ───────────────────────────────────────────────────
+    function applyTheme(dark) {
+      document.documentElement.classList.toggle('dark', dark);
+      document.getElementById('iconSun').classList.toggle('hidden', !dark);
+      document.getElementById('iconMoon').classList.toggle('hidden', dark);
+    }
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      applyTheme(!isDark);
+    }
+
+    // ── TABS ───────────────────────────────────────────────────
+    function cambiarTab(tab) {
+      const esOrdenes = tab === 'ordenes';
+      document.getElementById('tabOrdenes').classList.toggle('hidden', !esOrdenes);
+      document.getElementById('tabEntregas').classList.toggle('hidden', esOrdenes);
+      const btnO = document.getElementById('tabBtnOrdenes');
+      const btnE = document.getElementById('tabBtnEntregas');
+      if (esOrdenes) {
+        btnO.className = 'flex-1 py-2 rounded-lg text-sm font-semibold transition text-white';
+        btnO.style.backgroundColor = '#0D3B85';
+        btnE.className = 'flex-1 py-2 rounded-lg text-sm font-semibold transition text-gray-500 dark:text-gray-400';
+        btnE.style.backgroundColor = '';
+      } else {
+        btnE.className = 'flex-1 py-2 rounded-lg text-sm font-semibold transition text-white bg-teal-600';
+        btnO.className = 'flex-1 py-2 rounded-lg text-sm font-semibold transition text-gray-500 dark:text-gray-400';
+        btnO.style.backgroundColor = '';
+      }
+    }
+
+    // ── ESTADO PERSONAL (calculado client-side) ─────────────────
+    function renderEstadoPersonal() {
+      const badge = document.getElementById('badgePersonal');
+      const contenido = document.getElementById('contenidoPersonal');
+      const activas = ordenesData.filter(o =>
+        o.usuarioEncargado === sesion.usuario &&
+        ['Asignada','En_Progreso','Pausada'].includes(o.estado)
+      );
+      // Agrupar por operario
+      const porOp = {};
+      activas.forEach(o => {
+        if (!o.usuarioAsignado) return;
+        if (!porOp[o.usuarioAsignado]) porOp[o.usuarioAsignado] = [];
+        porOp[o.usuarioAsignado].push(o);
+      });
+      const ops = Object.keys(porOp);
+      if (!ops.length) {
+        badge.classList.add('hidden');
+        contenido.innerHTML = '<p class="text-center text-gray-400 py-2 text-sm">No hay operarios con órdenes activas en este momento.</p>';
+        return;
+      }
+      badge.textContent = ops.length; badge.classList.remove('hidden');
+      const BE = { Asignada:'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300', En_Progreso:'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300', Pausada:'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' };
+      const LE = { Asignada:'Asignada', En_Progreso:'En Progreso', Pausada:'Pausada' };
+      contenido.innerHTML = ops.map((usuario, idx) => `
+        ${idx > 0 ? '<div class="border-t border-gray-100 dark:border-gray-800 my-2"></div>' : ''}
+        <div class="mb-1">
+          <p class="font-semibold text-sm mb-1.5">${usuario}</p>
+          <div class="space-y-1 pl-3 border-l-2 border-gray-200 dark:border-gray-700">
+            ${porOp[usuario].map(o => `
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-mono text-xs font-semibold">${o.numero}</span>
+                ${o.of ? `<span class="text-xs text-gray-400 font-mono">OF: ${o.of}</span>` : ''}
+                <span class="text-xs text-gray-400">${o.area || '-'}</span>
+                <span class="px-1.5 py-0.5 rounded-full text-xs font-medium ${BE[o.estado]||''}">${LE[o.estado]||o.estado}</span>
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+    function toggleEstadoPersonal() {
+      panelPersonalAbierto = !panelPersonalAbierto;
+      document.getElementById('panelPersonal').classList.toggle('hidden', !panelPersonalAbierto);
+      document.getElementById('chevronPersonal').style.transform = panelPersonalAbierto ? 'rotate(180deg)' : '';
+    }
+
+    // ── FILTRAR ÓRDENES ────────────────────────────────────────
+    function filtrarOrdenes() {
+      const num = document.getElementById('filtroNumero').value.trim().toLowerCase();
+      const of  = document.getElementById('filtroOF').value.trim().toLowerCase();
+      const est = document.getElementById('filtroEstado').value;
+      const ahora = new Date();
+      const mes = ahora.getMonth(), anio = ahora.getFullYear();
+
+      let filtradas = ordenesData.filter(o => {
+        if (o.usuarioEncargado !== sesion.usuario) return false;
+        const f = o.timestampCreacion ? new Date(o.timestampCreacion) : null;
+        const esMes = f && f.getMonth()===mes && f.getFullYear()===anio;
+        if (!esMes && !ESTADOS_ACTIVOS.includes(o.estado)) return false;
+        const mN = !num || String(o.numero).toLowerCase().includes(num);
+        const mO = !of  || (o.of && String(o.of).toLowerCase().includes(of));
+        const mE = !est || o.estado === est;
+        return mN && mO && mE;
+      });
+      filtradas.sort((a,b) => new Date(b.timestampCreacion||0) - new Date(a.timestampCreacion||0));
+      renderTabla(filtradas);
+    }
+
+    function renderTabla(ordenes) {
+      const tbody = document.getElementById('tablaBody');
+      if (!ordenes.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">No hay órdenes que mostrar</td></tr>`;
+        return;
+      }
+      const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
+      tbody.innerHTML = ordenes.map(o => {
+        const esMio = sesion.rol==='Admin' || o.usuarioEncargado===sesion.usuario;
+        return `
+        <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${o.numero}</td>
+          <td class="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">${o.of||'-'}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioEncargado}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.area||'-'}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioAsignado||'-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${BADGE[o.estado]||''}">${LABEL[o.estado]||o.estado}</span>
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${fmt(o.timestampCreacion)}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <div class="flex items-center gap-1.5 flex-wrap">${esMio ? getAccionesOrden(o) : '<span class="text-xs text-gray-400">-</span>'}</div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function getAccionesOrden(o) {
+      const j = JSON.stringify(o).replace(/'/g,"&#39;");
+      if (o.estado === 'Registrada') return `
+        <button onclick='abrirModalEditarInicio(${j})'
+          class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+        <button onclick='abrirModalFinalizar(${j})'
+          class="text-xs px-2.5 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950 transition">Finalizar</button>
+        <button onclick='rechazarOrdenBtn("${o.numero}")'
+          class="text-xs px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition">Rechazar</button>`;
+      if (['Asignada','En_Progreso','Pausada','Pendiente_De_Asignación'].includes(o.estado)) return `
+        <button onclick='abrirModalEditarFinalizado(${j})'
+          class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>`;
+      return '<span class="text-xs text-gray-400">-</span>';
+    }
+
+    // ── FILTRAR ENTREGAS ───────────────────────────────────────
+    function filtrarEntregas() {
+      const num = document.getElementById('filtroNumeroEntrega').value.trim().toLowerCase();
+      const est = document.getElementById('filtroEstadoEntrega').value;
+      const ahora = new Date(); const mes = ahora.getMonth(), anio = ahora.getFullYear();
+      let filtradas = entregasData.filter(e => {
+        if (e.usuarioEncargado !== sesion.usuario) return false;
+        const f = e.timestampCreacion ? new Date(e.timestampCreacion) : null;
+        const esMes = f && f.getMonth()===mes && f.getFullYear()===anio;
+        if (!esMes && e.estado!=='Iniciada') return false;
+        const mN = !num || String(e.numero).toLowerCase().includes(num);
+        const mE = !est || e.estado===est;
+        return mN && mE;
+      });
+      filtradas.sort((a,b) => new Date(b.timestampCreacion||0) - new Date(a.timestampCreacion||0));
+      renderTablaEntregas(filtradas);
+    }
+
+    function renderTablaEntregas(entregas) {
+      const tbody = document.getElementById('tablaBodyEntregas');
+      if (!entregas.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No hay entregas que mostrar</td></tr>`;
+        return;
+      }
+      const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
+      tbody.innerHTML = entregas.map(e => `
+        <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${e.numero}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${e.usuarioEncargado}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${BADGE_E[e.estado]||''}">${e.estado}</span>
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${fmt(e.inicio)}</td>
+          <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${fmt(e.final)}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            ${e.estado==='Iniciada' && e.usuarioEncargado===sesion.usuario
+              ? `<button onclick="finalizarEntregaBtn('${e.numero}')"
+                   class="text-xs px-2.5 py-1.5 rounded-lg text-white bg-teal-600 hover:opacity-90 transition">✓ Finalizar</button>`
+              : '<span class="text-xs text-gray-400">-</span>'}
+          </td>
+        </tr>`).join('');
+    }
+
+    // ── MODAL ORDEN ────────────────────────────────────────────
+    function configModal(cfg) {
+      document.getElementById('modalTitulo').textContent = cfg.titulo;
+      document.getElementById('modalNumero').value = cfg.numero || '';
+      document.getElementById('modalNumero').readOnly = !cfg.numeroEditable;
+      document.getElementById('modalEncargado').textContent = cfg.encargado || (sesion.nombres||sesion.usuario);
+      document.getElementById('camposEtapa').classList.toggle('hidden', !cfg.etapa);
+      document.getElementById('campoOF').classList.toggle('hidden', !cfg.of);
+      document.getElementById('camposFinal').classList.toggle('hidden', !cfg.final);
+      document.getElementById('btnGuardarTexto').textContent = cfg.boton || 'Guardar';
+      ocultarErrorModal();
+    }
+
+    function abrirModalNueva() {
+      modoModal = 'nueva'; ordenEditando = null;
+      configModal({ titulo:'Nueva Orden', numero:'', numeroEditable:true, etapa:true, of:true, final:false, boton:'Guardar' });
+      document.getElementById('radioInicio').checked = true;
+      document.getElementById('radioFinal').checked = false;
+      document.getElementById('modalOF').value = '';
+      document.getElementById('modalArea').value = '';
+      document.getElementById('modalOperario').value = '';
+      mostrarModalOrden();
+    }
+    function abrirModalEditarInicio(orden) {
+      modoModal = 'editarInicio'; ordenEditando = orden;
+      configModal({ titulo:'Editar Nota de Entrega', numero:orden.numero, numeroEditable:true, encargado:orden.usuarioEncargado, etapa:false, of:true, final:false, boton:'Guardar Cambios' });
+      document.getElementById('modalOF').value = orden.of ? String(orden.of).slice(-4) : '';
+      mostrarModalOrden();
+    }
+    function abrirModalEditarFinalizado(orden) {
+      modoModal = 'editarFinalizado'; ordenEditando = orden;
+      configModal({ titulo:'Editar Orden', numero:orden.numero, numeroEditable:false, encargado:orden.usuarioEncargado, etapa:false, of:true, final:true, boton:'Guardar Cambios' });
+      document.getElementById('modalOF').value = orden.of ? String(orden.of).slice(-4) : '';
+      setTimeout(() => {
+        if (orden.area) document.getElementById('modalArea').value = orden.area;
+        if (orden.usuarioAsignado) document.getElementById('modalOperario').value = orden.usuarioAsignado;
+      }, 50);
+      mostrarModalOrden();
+    }
+    function abrirModalFinalizar(orden) {
+      modoModal = 'finalizarDesdeTabla'; ordenEditando = orden;
+      configModal({ titulo:'Finalizar Orden', numero:orden.numero, numeroEditable:false, encargado:orden.usuarioEncargado, etapa:false, of:false, final:true, boton:'Finalizar' });
+      document.getElementById('modalArea').value = '';
+      document.getElementById('modalOperario').value = '';
+      mostrarModalOrden();
+    }
+    function mostrarModalOrden() { const m = document.getElementById('modalOrden'); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function cerrarModal()       { const m = document.getElementById('modalOrden'); m.classList.add('hidden'); m.classList.remove('flex'); }
+    function onEtapaChange() {
+      const esFinal = document.getElementById('radioFinal').checked;
+      document.getElementById('camposFinal').classList.toggle('hidden', !esFinal);
+      document.getElementById('campoOF').classList.toggle('hidden', esFinal);
+    }
+
+    // ── GUARDAR ORDEN ──────────────────────────────────────────
+    async function guardarOrden() {
+      const numero   = document.getElementById('modalNumero').value.trim();
+      const esFinal  = document.getElementById('radioFinal').checked;
+      const area     = document.getElementById('modalArea').value;
+      const operario = document.getElementById('modalOperario').value;
+      const of4      = document.getElementById('modalOF').value.trim();
+      if (!numero) { mostrarErrorModal('Ingresa el número de orden'); return; }
+      if (of4 && !/^\d{5}$/.test(of4)) { mostrarErrorModal('La O.F. debe ser exactamente 4 dígitos'); return; }
+      const necesitaArea = modoModal==='finalizarDesdeTabla' || (modoModal==='nueva' && esFinal);
+      if (necesitaArea && !area) { mostrarErrorModal('El área es obligatoria'); return; }
+
+      setLoadingModal(true);
+      try {
+        if (modoModal === 'nueva') {
+          // Crear registro Inicio
+          await sbPost('ordenes', {
+            numero_orden: numero,
+            usuario_encargado: sesion.usuario,
+            inicio_encargado: now(),
+            estado: 'Registrada',
+            of: of4 ? `400000${of4}` : null,
+            created_at: now(), updated_at: now(),
+          });
+          // Si es Final también, marcar inmediatamente
+          if (esFinal) {
+            await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(numero)}`, {
+              final_encargado: now(),
+              area,
+              usuario_asignado: operario || null,
+              estado: operario ? 'Asignada' : 'Pendiente_De_Asignación',
+              updated_at: now(),
+            });
+          }
+        } else if (modoModal === 'editarInicio') {
+          const campos = { updated_at: now() };
+          if (numero !== ordenEditando.numero) campos.numero_orden = numero;
+          if (of4) campos.of = `400000${of4}`;
+          await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(ordenEditando.numero)}`, campos);
+        } else if (modoModal === 'editarFinalizado') {
+          const campos = { updated_at: now() };
+          if (area) campos.area = area;
+          if (operario) { campos.usuario_asignado = operario; campos.estado = 'Asignada'; }
+          if (of4) campos.of = `400000${of4}`;
+          await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(ordenEditando.numero)}`, campos);
+        } else if (modoModal === 'finalizarDesdeTabla') {
+          await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(ordenEditando.numero)}`, {
+            final_encargado: now(),
+            area,
+            usuario_asignado: operario || null,
+            estado: operario ? 'Asignada' : 'Pendiente_De_Asignación',
+            updated_at: now(),
+          });
+        }
+        cerrarModal();
+        mostrarToast('Guardado correctamente', 'success');
+        cargarTodo();
+      } catch(e) {
+        mostrarErrorModal('Error al guardar. Intenta nuevamente.');
+      } finally {
+        setLoadingModal(false);
+      }
+    }
+
+    // ── RECHAZAR ORDEN ─────────────────────────────────────────
+    async function rechazarOrdenBtn(numero) {
+      if (!confirm(`¿Confirmar rechazo de la orden ${numero}?\n\nSe marcará como Errónea.`)) return;
+      try {
+        await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(numero)}`, { estado:'Erronea', updated_at:now() });
+        mostrarToast('Orden marcada como errónea', 'success');
+        cargarTodo();
+      } catch { mostrarToast('Error de conexión', 'error'); }
+    }
+
+    // ── MODAL ENTREGA ──────────────────────────────────────────
+    function abrirModalNuevaEntrega() {
+      document.getElementById('modalNumeroEntrega').value = '';
+      document.getElementById('modalEntregaEncargado').textContent = sesion.nombres || sesion.usuario;
+      document.getElementById('modalEntregaError').classList.add('hidden');
+      const m = document.getElementById('modalEntrega'); m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function cerrarModalEntrega() {
+      const m = document.getElementById('modalEntrega'); m.classList.add('hidden'); m.classList.remove('flex');
+    }
+
+    async function guardarEntrega() {
+      const numero = document.getElementById('modalNumeroEntrega').value.trim();
+      const errEl  = document.getElementById('modalEntregaError');
+      const errTxt = document.getElementById('modalEntregaErrorText');
+      if (!numero) { errTxt.textContent='Ingresa el número de entrega'; errEl.classList.remove('hidden'); return; }
+
+      document.getElementById('btnGuardarEntrega').disabled = true;
+      document.getElementById('btnGuardarEntregaTexto').textContent = 'Guardando...';
+      document.getElementById('btnGuardarEntregaSpinner').classList.remove('hidden');
+
+      try {
+        await sbPost('entregas', {
+          numero_entrega: numero,
+          usuario_encargado: sesion.usuario,
+          estado: 'Iniciada',
+          inicio: now(),
+          created_at: now(), updated_at: now(),
+        });
+        cerrarModalEntrega();
+        mostrarToast('Entrega iniciada', 'success');
+        cambiarTab('entregas');
+        cargarTodo();
+      } catch(e) {
+        errTxt.textContent = 'Error al guardar. Intenta nuevamente.'; errEl.classList.remove('hidden');
+      } finally {
+        document.getElementById('btnGuardarEntrega').disabled = false;
+        document.getElementById('btnGuardarEntregaTexto').textContent = 'Iniciar';
+        document.getElementById('btnGuardarEntregaSpinner').classList.add('hidden');
+      }
+    }
+
+    async function finalizarEntregaBtn(numero) {
+      if (!confirm(`¿Confirmas el cierre de la entrega ${numero}?`)) return;
+      try {
+        await sbPatch('entregas', `numero_entrega=eq.${encodeURIComponent(numero)}`, { estado:'Completada', final:now(), updated_at:now() });
+        mostrarToast('Entrega completada', 'success');
+        cargarTodo();
+      } catch { mostrarToast('Error de conexión', 'error'); }
+    }
+
+    // ── HELPERS MODAL ──────────────────────────────────────────
+    function mostrarErrorModal(msg) { document.getElementById('modalErrorText').textContent=msg; document.getElementById('modalError').classList.remove('hidden'); }
+    function ocultarErrorModal()    { document.getElementById('modalError').classList.add('hidden'); }
+    function setLoadingModal(l)     {
+      document.getElementById('btnGuardar').disabled = l;
+      document.getElementById('btnGuardarTexto').textContent = l ? 'Guardando...' : 'Guardar';
+      document.getElementById('btnGuardarSpinner').classList.toggle('hidden', !l);
+    }
+
+    // ── TOAST ──────────────────────────────────────────────────
+    let toastTimer;
+    function mostrarToast(msg, tipo) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastInner').className = `flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ${tipo==='success'?'bg-green-600':'bg-red-600'}`;
+      document.getElementById('toastMsg').textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    cambiarTab('ordenes');
+    init();
+  </script>
+</body>
+</html>

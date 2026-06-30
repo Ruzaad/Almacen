@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Admin - Sistema Almacén</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: {
+        primary: { DEFAULT: '#0D3B85', light: '#1A56B4', dark: '#0a2d66' }
+      }}}
+    }
+  </script>
+  <style>
+    html { zoom:1; width:100%; }
+    * { -webkit-tap-highlight-color: transparent; }
+    body { width:100vw; max-width:100vw; overflow-x:hidden; }
+    @media (max-width:640px) { button { min-height:40px; } input,select,textarea { font-size:16px!important; } }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F0F2F5] dark:bg-gray-950 text-[#212529] dark:text-white transition-colors duration-300">
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-sm px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color:#0D3B85">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0v10l-8 4m-8-4V7m8 4v10"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold leading-none">Sistema Almacén</p>
+        <p class="text-xs text-gray-400 mt-0.5">Admin: <span id="navNombre"></span></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+        <svg id="iconSun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.71.71M6.34 17.66l-.71.71m12.73 0-.71-.71M6.34 6.34l-.71-.71M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
+        </svg>
+        <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#0D3B85]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <button onclick="cerrarSesion()" class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
+        </svg>
+        Salir
+      </button>
+    </div>
+  </nav>
+
+  <!-- TABS -->
+  <div class="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 overflow-x-auto">
+    <div class="max-w-7xl mx-auto flex gap-0 min-w-max">
+      <button onclick="setTab('metricas')"  id="tabMetricas"  class="tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">&#128202; Métricas</button>
+      <button onclick="setTab('ordenes')"   id="tabOrdenes"   class="tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">Notas de Entrega</button>
+      <button onclick="setTab('entregas')"  id="tabEntregas"  class="tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">Entregas de Mercancía</button>
+      <button onclick="setTab('usuarios')"  id="tabUsuarios"  class="tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">Usuarios</button>
+      <button onclick="setTab('tiempos')"   id="tabTiempos"   class="tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">Tiempos</button>
+      <button onclick="setTab('areas')"     id="tabAreas"     class="tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap">Áreas</button>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+
+    <!-- TAB MÉTRICAS -->
+    <div id="panelMetricas" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <div>
+          <h2 class="text-lg font-bold">Métricas Diarias</h2>
+          <p class="text-sm text-gray-400">Resumen de actividad del sistema por día</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="fechaMetrica" type="date"
+            class="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"
+            onchange="cargarMetricas()"/>
+          <button onclick="cargarMetricas()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+            </svg>
+            Recargar
+          </button>
+        </div>
+      </div>
+      <div id="tarjetasMetricas" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center col-span-2 sm:col-span-3 lg:col-span-6 text-gray-400 py-10">
+          Selecciona una fecha para ver las métricas
+        </div>
+      </div>
+      <div class="grid lg:grid-cols-2 gap-5">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Notas de Entrega creadas ese día</h3>
+          <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm" style="min-width:500px">
+                <thead><tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">N° Orden</th>
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">OF</th>
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">Encargado</th>
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">Estado</th>
+                </tr></thead>
+                <tbody id="tablaMetricasOrdenes"><tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">—</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Entregas de Mercancía iniciadas ese día</h3>
+          <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm" style="min-width:400px">
+                <thead><tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">N° Entrega</th>
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">Encargado</th>
+                  <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">Estado</th>
+                </tr></thead>
+                <tbody id="tablaMetricasEntregas"><tr><td colspan="3" class="px-4 py-8 text-center text-gray-400">—</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB ÓRDENES -->
+    <div id="panelOrdenes" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h2 class="text-lg font-bold">Todas las Notas de Entrega</h2>
+        <button onclick="abrirModalNuevaOrden()"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition"
+          style="background-color:#0D3B85">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Nueva
+        </button>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 mb-4 flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[130px]">
+          <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z"/></svg>
+          </span>
+          <input id="filtroNumeroAdmin" type="text" placeholder="N° Orden..." class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="filtrarOrdenes()"/>
+        </div>
+        <div class="relative flex-1 min-w-[120px]">
+          <span class="absolute inset-y-0 left-3 flex items-center text-gray-400 text-xs font-mono font-bold">OF</span>
+          <input id="filtroOFAdmin" type="text" placeholder="N° OF..." class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="filtrarOrdenes()"/>
+        </div>
+        <select id="filtroEstadoAdmin" onchange="filtrarOrdenes()" class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+          <option value="">Todos los estados</option>
+          <option value="Registrada">Registrada</option>
+          <option value="Pendiente_De_Asignación">Pend. Asignación</option>
+          <option value="Asignada">Asignada</option>
+          <option value="En_Progreso">En Progreso</option>
+          <option value="Pausada">Pausada</option>
+          <option value="Completada">Completada</option>
+          <option value="Rechazada">Rechazada</option>
+          <option value="Erronea">Errónea</option>
+        </select>
+        <button onclick="cargarOrdenes()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          Recargar
+        </button>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:900px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Orden</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">OF</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Área</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Operario</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Creación</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaOrdenesAdmin"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB ENTREGAS -->
+    <div id="panelEntregas" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h2 class="text-lg font-bold">Entregas de Mercancía</h2>
+        <button onclick="cargarEntregas()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          Recargar
+        </button>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 mb-4 flex flex-wrap gap-3">
+        <div class="relative flex-1 min-w-[130px]">
+          <span class="absolute inset-y-0 left-3 flex items-center text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z"/></svg></span>
+          <input id="filtroNumeroEntregaAdmin" type="text" placeholder="N° Entrega..." class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="filtrarEntregas()"/>
+        </div>
+        <select id="filtroEstadoEntregaAdmin" onchange="filtrarEntregas()" class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+          <option value="">Todos los estados</option>
+          <option value="Iniciada">Iniciada</option>
+          <option value="Completada">Completada</option>
+        </select>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:700px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Entrega</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Inicio</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Final</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">T. Total</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaEntregasAdmin"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB USUARIOS -->
+    <div id="panelUsuarios" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h2 class="text-lg font-bold">Usuarios del Sistema</h2>
+        <button onclick="abrirModalNuevoUsuario()"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition"
+          style="background-color:#0D3B85">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0zM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+          Nuevo Usuario
+        </button>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:600px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Usuario</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Nombre</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Rol</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Email</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaUsuariosAdmin"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB TIEMPOS -->
+    <div id="panelTiempos" class="hidden">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold">Registro de Tiempos</h2>
+        <button onclick="cargarTiempos()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+          Recargar
+        </button>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:750px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Orden</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Operario</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Inicio</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Fin</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">T. Neto</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Pausas</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaTiemposAdmin"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB ÁREAS -->
+    <div id="panelAreas" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-bold">Áreas de Trabajo</h2>
+          <p class="text-sm text-gray-400">Áreas disponibles para asignar en órdenes</p>
+        </div>
+        <button onclick="abrirModalNuevaArea()"
+          class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition"
+          style="background-color:#0D3B85">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Nueva Área
+        </button>
+      </div>
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+        <div style="max-height:530px;overflow:auto;">
+          <table class="w-full text-sm" style="min-width:320px">
+            <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
+              <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">Nombre del Área</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tablaAreasAdmin"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL ORDEN (Admin) -->
+  <div id="modalOrden" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal('modalOrden')"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="modalOrdenTitulo" class="text-base font-bold">Editar Orden</h3>
+        <button onclick="cerrarModal('modalOrden')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="space-y-4">
+        <div><label class="block text-sm font-medium mb-1">N° Orden</label>
+          <input id="moNumero" type="text" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500"/></div>
+        <div><label class="block text-sm font-medium mb-1">OF (últimos 4 dígitos)</label>
+          <div class="flex">
+            <span class="px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm text-gray-500 font-mono">400000</span>
+            <input id="moOF" type="text" inputmode="numeric" maxlength="4" placeholder="0000" class="w-full px-3 py-2.5 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)"/>
+          </div></div>
+        <div><label class="block text-sm font-medium mb-1">Estado</label>
+          <select id="moEstado" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
+            <option value="Registrada">Registrada</option>
+            <option value="Pendiente_De_Asignación">Pendiente de Asignación</option>
+            <option value="Asignada">Asignada</option>
+            <option value="En_Progreso">En Progreso</option>
+            <option value="Pausada">Pausada</option>
+            <option value="Completada">Completada</option>
+            <option value="Rechazada">Rechazada</option>
+            <option value="Erronea">Errónea</option>
+          </select></div>
+        <div><label class="block text-sm font-medium mb-1">Área</label>
+          <select id="moArea" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"><option value="">Sin área</option></select></div>
+        <div><label class="block text-sm font-medium mb-1">Operario Asignado</label>
+          <select id="moOperario" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"><option value="">Sin asignar</option></select></div>
+        <div><label class="block text-sm font-medium mb-1">Inicio Encargado</label>
+          <input id="moInicioEnc" type="datetime-local" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div><label class="block text-sm font-medium mb-1">Final Encargado</label>
+          <input id="moFinalEnc" type="datetime-local" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div id="moError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button id="btnEliminarOrden" onclick="confirmarEliminarOrden()" class="hidden px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 transition">Eliminar</button>
+        <button onclick="cerrarModal('modalOrden')" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button onclick="guardarOrden()" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition" style="background-color:#0D3B85">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ENTREGA (Admin) -->
+  <div id="modalEntregaAdmin" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal('modalEntregaAdmin')"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="meaTitulo" class="text-base font-bold">Editar Entrega</h3>
+        <button onclick="cerrarModal('modalEntregaAdmin')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="space-y-4">
+        <div><label class="block text-sm font-medium mb-1">N° Entrega</label>
+          <input id="meaNumero" type="text" readonly class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500"/></div>
+        <div><label class="block text-sm font-medium mb-1">Estado</label>
+          <select id="meaEstado" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
+            <option value="Iniciada">Iniciada</option>
+            <option value="Completada">Completada</option>
+          </select></div>
+        <div><label class="block text-sm font-medium mb-1">Inicio</label>
+          <input id="meaInicio" type="datetime-local" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div><label class="block text-sm font-medium mb-1">Final</label>
+          <input id="meaFinal" type="datetime-local" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div id="meaError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="eliminarEntregaAdmin()" class="px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 transition">Eliminar</button>
+        <button onclick="cerrarModal('modalEntregaAdmin')" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button onclick="guardarEntregaAdmin()" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition" style="background-color:#0D3B85">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL USUARIO -->
+  <div id="modalUsuario" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal('modalUsuario')"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="modalUsuarioTitulo" class="text-base font-bold">Nuevo Usuario</h3>
+        <button onclick="cerrarModal('modalUsuario')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium mb-1">DNI</label>
+            <input id="muDni" type="text" placeholder="12345678" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+          <div><label class="block text-sm font-medium mb-1">Usuario</label>
+            <input id="muUsuario" type="text" placeholder="edith" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        </div>
+        <div><label class="block text-sm font-medium mb-1">Nombre Completo</label>
+          <input id="muNombre" type="text" placeholder="Edith Castro" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium mb-1">Rol</label>
+            <select id="muRol" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
+              <option value="Operario">Operario</option>
+              <option value="Encargado">Encargado</option>
+              <option value="Admin">Admin</option>
+            </select></div>
+          <div><label class="block text-sm font-medium mb-1">Contraseña</label>
+            <input id="muContrasena" type="password" placeholder="••••••••" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        </div>
+        <div><label class="block text-sm font-medium mb-1">Activo</label>
+          <select id="muActivo" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select></div>
+        <div><label class="block text-sm font-medium mb-1">Email</label>
+          <input id="muEmail" type="email" placeholder="usuario@samitex.com.pe" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div id="muError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="cerrarModal('modalUsuario')" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button id="btnGuardarUsuario" onclick="guardarUsuario()"
+          class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition flex items-center justify-center gap-2"
+          style="background-color:#0D3B85">
+          <span id="btnGuardarUsuarioTexto">Guardar</span>
+          <svg id="btnGuardarUsuarioSpinner" class="hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TIEMPO -->
+  <div id="modalTiempo" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal('modalTiempo')"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-bold">Editar Tiempo</h3>
+        <button onclick="cerrarModal('modalTiempo')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium mb-1">N° Orden</label>
+            <input id="mtNumero" type="text" readonly class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500"/></div>
+          <div><label class="block text-sm font-medium mb-1">Operario</label>
+            <input id="mtOperario" type="text" readonly class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500"/></div>
+        </div>
+        <div><label class="block text-sm font-medium mb-1">Inicio Operario</label>
+          <input id="mtInicio" type="datetime-local" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div><label class="block text-sm font-medium mb-1">Fin Operario</label>
+          <input id="mtFin" type="datetime-local" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div><label class="block text-sm font-medium mb-1">Total Pausas (min)</label>
+          <input id="mtPausas" type="number" min="0" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]"/></div>
+        <div><label class="block text-sm font-medium mb-1">Estado</label>
+          <select id="mtEstado" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
+            <option value="En_Progreso">En Progreso</option>
+            <option value="Pausado">Pausado</option>
+            <option value="Completado">Completado</option>
+          </select></div>
+        <div id="mtError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="cerrarModal('modalTiempo')" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button onclick="guardarTiempo()" class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition" style="background-color:#0D3B85">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ÁREA -->
+  <div id="modalAreaAdmin" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal('modalAreaAdmin')"></div>
+    <div class="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="modalAreaTitulo" class="text-base font-bold">Nueva Área</h3>
+        <button onclick="cerrarModal('modalAreaAdmin')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="space-y-4">
+        <div><label class="block text-sm font-medium mb-1">Nombre del Área <span class="text-red-500">*</span></label>
+          <input id="maaNombre" type="text" placeholder="Ej. Tintorería" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/></div>
+        <div id="maaError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="cerrarModal('modalAreaAdmin')" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button id="btnGuardarArea" onclick="guardarArea()"
+          class="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition flex items-center justify-center gap-2"
+          style="background-color:#0D3B85">
+          <span id="btnGuardarAreaTexto">Guardar</span>
+          <svg id="btnGuardarAreaSpinner" class="hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMACIÓN ELIMINAR -->
+  <div id="modalConfirm" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="relative w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10 text-center">
+      <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center mx-auto mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      </div>
+      <h3 id="confirmTitle" class="text-base font-bold mb-1">¿Eliminar registro?</h3>
+      <p class="text-sm text-gray-400 mb-5">Esta acción no se puede deshacer.</p>
+      <div class="flex gap-3">
+        <button onclick="cerrarModal('modalConfirm')" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancelar</button>
+        <button onclick="ejecutarEliminar()" class="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:opacity-90 transition">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-6 right-4 z-50 hidden">
+    <div id="toastInner" class="flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white">
+      <span id="toastMsg"></span>
+    </div>
+  </div>
+
+  <script>
+    // ── SUPABASE ────────────────────────────────────────────────
+    const SB_URL = 'https://mwivnsbybzsivicrrbpd.supabase.co';
+    const SB_KEY = 'sb_publishable_O0H19Ni20_MsQ7kYsRtlHA_AJ250EKE';
+    const SB_HDR = { 'Content-Type':'application/json', 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+    async function sbGet(table, params='') {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}${params?'?'+params:''}`, { headers: SB_HDR });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+    async function sbPost(table, body) {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+        method:'POST', headers:{...SB_HDR,'Prefer':'return=representation'}, body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+    async function sbPatch(table, params, body) {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, {
+        method:'PATCH', headers:{...SB_HDR,'Prefer':'return=representation'}, body: JSON.stringify(body)
+      });
+      if (!r.ok) throw new Error(await r.text());
+      return r.json();
+    }
+    async function sbDelete(table, params) {
+      const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { method:'DELETE', headers: SB_HDR });
+      if (!r.ok) throw new Error(await r.text());
+      return true;
+    }
+    async function sha256(txt) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+    const now = () => new Date().toISOString();
+
+    // ── ESTADO ─────────────────────────────────────────────────
+    let sesion = null;
+    let ordenesData=[], entregasData=[], usuariosData=[], tiemposData=[], areasData=[];
+    let areaEditando=null, ordenEditando=null, entregaEditando=null, tiempoEditando=null, usuarioEditando=null;
+    let modoUsuario='nuevo', pendingDeleteFn=null;
+
+    const BADGE = {
+      Registrada:'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      Pendiente_De_Asignación:'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+      Asignada:'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+      En_Progreso:'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      Pausada:'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      Completada:'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300',
+      Rechazada:'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      Erronea:'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+    };
+    const LABEL = {
+      Registrada:'Registrada', Pendiente_De_Asignación:'Pend. Asignación',
+      Asignada:'Asignada', En_Progreso:'En Progreso', Pausada:'Pausada',
+      Completada:'Completada', Rechazada:'Rechazada', Erronea:'Errónea'
+    };
+
+    // ── INIT ───────────────────────────────────────────────────
+    function init() {
+      applyTheme(localStorage.getItem('theme') === 'dark');
+      const raw = localStorage.getItem('usuario');
+      if (!raw) { window.location.href = 'index.html'; return; }
+      sesion = JSON.parse(raw);
+      if (sesion.rol !== 'Admin') { window.location.href = 'index.html'; return; }
+      document.getElementById('navNombre').textContent = sesion.nombres || sesion.usuario;
+      document.getElementById('fechaMetrica').value = new Date().toISOString().split('T')[0];
+      setTab('metricas');
+    }
+
+    // ── TEMA ───────────────────────────────────────────────────
+    function applyTheme(dark) {
+      document.documentElement.classList.toggle('dark', dark);
+      document.getElementById('iconSun').classList.toggle('hidden', !dark);
+      document.getElementById('iconMoon').classList.toggle('hidden', dark);
+    }
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      applyTheme(!isDark);
+    }
+    function cerrarSesion() {
+      localStorage.removeItem('usuario'); localStorage.removeItem('lastActivity');
+      window.location.href = 'index.html';
+    }
+
+    // ── TABS ───────────────────────────────────────────────────
+    function setTab(tab) {
+      ['metricas','ordenes','entregas','usuarios','tiempos','areas'].forEach(t => {
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        const panel = document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1));
+        const activo = t === tab;
+        btn.style.borderColor = activo ? '#0D3B85' : 'transparent';
+        btn.style.color = activo ? '#0D3B85' : '';
+        btn.className = activo
+          ? 'tab-btn px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap'
+          : 'tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent transition whitespace-nowrap text-gray-400 hover:text-gray-600 dark:hover:text-gray-300';
+        panel.classList.toggle('hidden', !activo);
+      });
+      if (tab === 'metricas')  cargarMetricas();
+      if (tab === 'ordenes'  && !ordenesData.length)  cargarOrdenes();
+      if (tab === 'entregas' && !entregasData.length) cargarEntregas();
+      if (tab === 'usuarios' && !usuariosData.length) cargarUsuarios();
+      if (tab === 'tiempos'  && !tiemposData.length)  cargarTiempos();
+      if (tab === 'areas'    && !areasData.length)    cargarAreas();
+    }
+
+    // ── MÉTRICAS ───────────────────────────────────────────────
+    async function cargarMetricas() {
+      const fecha = document.getElementById('fechaMetrica').value;
+      if (!fecha) return;
+      document.getElementById('tarjetasMetricas').innerHTML = '<div class="col-span-6 text-center py-6 text-gray-400">Cargando...</div>';
+      try {
+        const inicio = `${fecha}T00:00:00`;
+        const fin    = `${fecha}T23:59:59`;
+        const [ordenes, entregas, tiempos] = await Promise.all([
+          sbGet('ordenes',  `created_at=gte.${inicio}&created_at=lte.${fin}`),
+          sbGet('entregas', `created_at=gte.${inicio}&created_at=lte.${fin}`),
+          sbGet('tiempos',  `created_at=gte.${inicio}&created_at=lte.${fin}`),
+        ]);
+        const m = {
+          ordenes: {
+            creadas: ordenes.length,
+            completadas: ordenes.filter(o=>o.estado==='Completada').length,
+            rechazadas:  ordenes.filter(o=>['Rechazada','Erronea'].includes(o.estado)).length,
+            detalle: ordenes.map(o=>({ numero:o.numero_orden, of:o.of, encargado:o.usuario_encargado, estado:o.estado })),
+          },
+          entregas: {
+            iniciadas:   entregas.length,
+            completadas: entregas.filter(e=>e.estado==='Completada').length,
+            detalle: entregas.map(e=>({ numero:e.numero_entrega, encargado:e.usuario_encargado, estado:e.estado })),
+          },
+          operariosActivos: [...new Set(tiempos.map(t=>t.usuario_operario))].length,
+          tiempoPromedioMin: tiempos.length
+            ? Math.round(tiempos.filter(t=>t.tiempo_neto_minutos).reduce((a,t)=>a+t.tiempo_neto_minutos,0)/tiempos.length)
+            : 0,
+        };
+        renderMetricas(m);
+      } catch { mostrarToast('Error al cargar métricas', 'error'); }
+    }
+
+    function renderMetricas(m) {
+      const beE = { Iniciada:'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300', Completada:'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' };
+      document.getElementById('tarjetasMetricas').innerHTML = `
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-bold text-[#0D3B85]">${m.ordenes.creadas}</p>
+          <p class="text-xs text-gray-400 mt-1">Órdenes creadas</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-bold text-teal-600">${m.ordenes.completadas}</p>
+          <p class="text-xs text-gray-400 mt-1">Órdenes completadas</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-bold text-red-500">${m.ordenes.rechazadas}</p>
+          <p class="text-xs text-gray-400 mt-1">Rechazadas</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-bold text-blue-600">${m.entregas.completadas} / ${m.entregas.iniciadas}</p>
+          <p class="text-xs text-gray-400 mt-1">Entregas completadas / iniciadas</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-bold text-orange-500">${formatMinutos(m.tiempoPromedioMin)}</p>
+          <p class="text-xs text-gray-400 mt-1">T. promedio por orden</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-bold text-purple-600">${m.operariosActivos}</p>
+          <p class="text-xs text-gray-400 mt-1">Operarios activos</p>
+        </div>`;
+      document.getElementById('tarjetasMetricas').className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6';
+      const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
+      document.getElementById('tablaMetricasOrdenes').innerHTML = m.ordenes.detalle.length
+        ? m.ordenes.detalle.map(o=>`<tr class="border-t border-gray-100 dark:border-gray-800">
+            <td class="px-4 py-2.5 font-mono font-semibold text-sm">${o.numero}</td>
+            <td class="px-4 py-2.5 text-xs font-mono text-gray-500">${o.of||'-'}</td>
+            <td class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">${o.encargado}</td>
+            <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${BADGE[o.estado]||''}">${LABEL[o.estado]||o.estado}</span></td>
+          </tr>`).join('')
+        : '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-400">Sin órdenes ese día</td></tr>';
+      document.getElementById('tablaMetricasEntregas').innerHTML = m.entregas.detalle.length
+        ? m.entregas.detalle.map(e=>`<tr class="border-t border-gray-100 dark:border-gray-800">
+            <td class="px-4 py-2.5 font-mono font-semibold text-sm">${e.numero}</td>
+            <td class="px-4 py-2.5 text-sm text-gray-600 dark:text-gray-300">${e.encargado}</td>
+            <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${beE[e.estado]||''}">${e.estado}</span></td>
+          </tr>`).join('')
+        : '<tr><td colspan="3" class="px-4 py-6 text-center text-gray-400">Sin entregas ese día</td></tr>';
+    }
+
+    // ── ÓRDENES ────────────────────────────────────────────────
+    async function cargarOrdenes() {
+      try {
+        const data = await sbGet('ordenes', 'order=created_at.desc');
+        ordenesData = data.map(o=>({
+          numero: o.numero_orden, of: o.of, usuarioEncargado: o.usuario_encargado,
+          area: o.area, usuarioAsignado: o.usuario_asignado, estado: o.estado,
+          timestampCreacion: o.created_at, inicioEncargado: o.inicio_encargado, finalEncargado: o.final_encargado,
+        }));
+        filtrarOrdenes();
+      } catch { mostrarToast('Error al cargar órdenes','error'); }
+    }
+
+    function filtrarOrdenes() {
+      const num = document.getElementById('filtroNumeroAdmin').value.trim().toLowerCase();
+      const of  = document.getElementById('filtroOFAdmin').value.trim().toLowerCase();
+      const est = document.getElementById('filtroEstadoAdmin').value;
+      let f = ordenesData.filter(o =>
+        (!num || String(o.numero).toLowerCase().includes(num)) &&
+        (!of  || (o.of && String(o.of).toLowerCase().includes(of))) &&
+        (!est || o.estado === est)
+      );
+      f.sort((a,b)=>new Date(b.timestampCreacion||0)-new Date(a.timestampCreacion||0));
+      renderOrdenes(f);
+    }
+
+    function renderOrdenes(ordenes) {
+      const tbody = document.getElementById('tablaOrdenesAdmin');
+      if (!ordenes?.length) { tbody.innerHTML=`<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">No hay órdenes</td></tr>`; return; }
+      const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
+      tbody.innerHTML = ordenes.map(o=>`
+        <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${o.numero}</td>
+          <td class="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">${o.of||'-'}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioEncargado}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.area||'-'}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioAsignado||'-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap"><span class="px-2 py-1 rounded-full text-xs font-medium ${BADGE[o.estado]||''}">${LABEL[o.estado]||o.estado}</span></td>
+          <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${fmt(o.timestampCreacion)}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <button onclick='abrirModalEditarOrden(${JSON.stringify(o).replace(/'/g,"&#39;")})'
+              class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function abrirModalNuevaOrden() {
+      ordenEditando = null;
+      document.getElementById('modalOrdenTitulo').textContent = 'Nueva Orden';
+      document.getElementById('moNumero').value = ''; document.getElementById('moNumero').readOnly = false;
+      document.getElementById('moOF').value = ''; document.getElementById('moEstado').value = 'Registrada';
+      document.getElementById('moArea').value = ''; document.getElementById('moOperario').value = '';
+      document.getElementById('moInicioEnc').value = ''; document.getElementById('moFinalEnc').value = '';
+      document.getElementById('moError').classList.add('hidden');
+      document.getElementById('btnEliminarOrden').classList.add('hidden');
+      cargarSelectsOrden();
+      mostrarModal('modalOrden');
+    }
+
+    function abrirModalEditarOrden(orden) {
+      ordenEditando = orden;
+      document.getElementById('modalOrdenTitulo').textContent = 'Editar Orden';
+      document.getElementById('moNumero').value = orden.numero; document.getElementById('moNumero').readOnly = true;
+      document.getElementById('moOF').value = orden.of ? String(orden.of).slice(-4) : '';
+      document.getElementById('moEstado').value = orden.estado;
+      document.getElementById('moInicioEnc').value = orden.inicioEncargado ? toDatetimeLocal(orden.inicioEncargado) : '';
+      document.getElementById('moFinalEnc').value  = orden.finalEncargado  ? toDatetimeLocal(orden.finalEncargado)  : '';
+      document.getElementById('moError').classList.add('hidden');
+      document.getElementById('btnEliminarOrden').classList.remove('hidden');
+      cargarSelectsOrden(() => {
+        document.getElementById('moArea').value = orden.area || '';
+        document.getElementById('moOperario').value = orden.usuarioAsignado || '';
+      });
+      mostrarModal('modalOrden');
+    }
+
+    async function cargarSelectsOrden(cb) {
+      try {
+        const [areas, ops] = await Promise.all([
+          sbGet('areas','order=nombre.asc'),
+          sbGet('usuarios','rol=eq.Operario&activo=eq.true&select=usuario,nombres&order=nombres.asc'),
+        ]);
+        const selA = document.getElementById('moArea');
+        while (selA.options.length > 1) selA.remove(1);
+        areas.forEach(a => { const o=document.createElement('option'); o.value=a.nombre; o.textContent=a.nombre; selA.appendChild(o); });
+        const selO = document.getElementById('moOperario');
+        while (selO.options.length > 1) selO.remove(1);
+        ops.forEach(u => { const o=document.createElement('option'); o.value=u.usuario; o.textContent=u.nombres; selO.appendChild(o); });
+        cb?.();
+      } catch {}
+    }
+
+    async function guardarOrden() {
+      const numero = document.getElementById('moNumero').value.trim();
+      const of4    = document.getElementById('moOF').value.trim();
+      const errEl  = document.getElementById('moError');
+      if (!numero) { errEl.textContent='Ingresa el N° de orden'; errEl.classList.remove('hidden'); return; }
+      if (of4 && !/^\d{4}$/.test(of4)) { errEl.textContent='La OF debe ser 4 dígitos'; errEl.classList.remove('hidden'); return; }
+      const campos = {
+        estado: document.getElementById('moEstado').value,
+        area: document.getElementById('moArea').value || null,
+        usuario_asignado: document.getElementById('moOperario').value || null,
+        inicio_encargado: document.getElementById('moInicioEnc').value || null,
+        final_encargado:  document.getElementById('moFinalEnc').value  || null,
+        of: of4 ? `400000${of4}` : null,
+        updated_at: now(),
+      };
+      try {
+        if (ordenEditando) {
+          await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(numero)}`, campos);
+          mostrarToast('Orden actualizada','success');
+        } else {
+          await sbPost('ordenes', { numero_orden:numero, usuario_encargado:sesion.usuario, ...campos, inicio_encargado:now(), created_at:now() });
+          mostrarToast('Orden creada','success');
+        }
+        cerrarModal('modalOrden'); ordenesData=[]; cargarOrdenes();
+      } catch(e) { errEl.textContent='Error al guardar'; errEl.classList.remove('hidden'); }
+    }
+
+    function confirmarEliminarOrden() {
+      document.getElementById('confirmTitle').textContent = `¿Eliminar orden ${ordenEditando.numero}?`;
+      pendingDeleteFn = async () => {
+        try {
+          await sbDelete('ordenes', `numero_orden=eq.${encodeURIComponent(ordenEditando.numero)}`);
+          cerrarModal('modalConfirm'); mostrarToast('Orden eliminada','success'); ordenesData=[]; cargarOrdenes();
+        } catch { mostrarToast('Error al eliminar','error'); }
+      };
+      cerrarModal('modalOrden'); mostrarModal('modalConfirm');
+    }
+
+    // ── ENTREGAS ───────────────────────────────────────────────
+    async function cargarEntregas() {
+      try {
+        const data = await sbGet('entregas','order=created_at.desc');
+        entregasData = data.map(e=>({ numero:e.numero_entrega, usuarioEncargado:e.usuario_encargado, estado:e.estado, inicio:e.inicio, final:e.final, timestampCreacion:e.created_at }));
+        filtrarEntregas();
+      } catch { mostrarToast('Error al cargar entregas','error'); }
+    }
+
+    function filtrarEntregas() {
+      const num = document.getElementById('filtroNumeroEntregaAdmin').value.trim().toLowerCase();
+      const est = document.getElementById('filtroEstadoEntregaAdmin').value;
+      let f = entregasData.filter(e => (!num||String(e.numero).toLowerCase().includes(num)) && (!est||e.estado===est));
+      f.sort((a,b)=>new Date(b.timestampCreacion||0)-new Date(a.timestampCreacion||0));
+      renderEntregas(f);
+    }
+
+    function renderEntregas(entregas) {
+      const tbody = document.getElementById('tablaEntregasAdmin');
+      if (!entregas.length) { tbody.innerHTML=`<tr><td colspan="7" class="px-4 py-10 text-center text-gray-400">No hay entregas</td></tr>`; return; }
+      const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
+      const beE = { Iniciada:'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300', Completada:'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300' };
+      tbody.innerHTML = entregas.map(e=>{
+        const inicio = e.inicio ? new Date(e.inicio) : null;
+        const final  = e.final  ? new Date(e.final)  : null;
+        const durMin = inicio && final ? Math.round((final-inicio)/60000) : null;
+        return `<tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${e.numero}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${e.usuarioEncargado}</td>
+          <td class="px-4 py-3 whitespace-nowrap"><span class="px-2 py-1 rounded-full text-xs font-medium ${beE[e.estado]||''}">${e.estado}</span></td>
+          <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${fmt(e.inicio)}</td>
+          <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${fmt(e.final)}</td>
+          <td class="px-4 py-3 font-medium whitespace-nowrap">${durMin!==null?formatMinutos(durMin):'-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <button onclick='abrirModalEditarEntrega(${JSON.stringify(e).replace(/'/g,"&#39;")})'
+              class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function abrirModalEditarEntrega(entrega) {
+      entregaEditando = entrega;
+      document.getElementById('meaTitulo').textContent = 'Editar Entrega';
+      document.getElementById('meaNumero').value = entrega.numero;
+      document.getElementById('meaEstado').value = entrega.estado;
+      document.getElementById('meaInicio').value = entrega.inicio ? toDatetimeLocal(entrega.inicio) : '';
+      document.getElementById('meaFinal').value  = entrega.final  ? toDatetimeLocal(entrega.final)  : '';
+      document.getElementById('meaError').classList.add('hidden');
+      mostrarModal('modalEntregaAdmin');
+    }
+
+    async function guardarEntregaAdmin() {
+      const campos = { inicio:document.getElementById('meaInicio').value||null, final:document.getElementById('meaFinal').value||null, estado:document.getElementById('meaEstado').value, updated_at:now() };
+      try {
+        await sbPatch('entregas', `numero_entrega=eq.${encodeURIComponent(entregaEditando.numero)}`, campos);
+        cerrarModal('modalEntregaAdmin'); mostrarToast('Entrega actualizada','success'); entregasData=[]; cargarEntregas();
+      } catch { document.getElementById('meaError').textContent='Error al guardar'; document.getElementById('meaError').classList.remove('hidden'); }
+    }
+
+    function eliminarEntregaAdmin() {
+      document.getElementById('confirmTitle').textContent = `¿Eliminar entrega ${entregaEditando.numero}?`;
+      pendingDeleteFn = async () => {
+        try {
+          await sbDelete('entregas', `numero_entrega=eq.${encodeURIComponent(entregaEditando.numero)}`);
+          cerrarModal('modalConfirm'); mostrarToast('Entrega eliminada','success'); entregasData=[]; cargarEntregas();
+        } catch { mostrarToast('Error al eliminar','error'); }
+      };
+      cerrarModal('modalEntregaAdmin'); mostrarModal('modalConfirm');
+    }
+
+    // ── USUARIOS ───────────────────────────────────────────────
+    async function cargarUsuarios() {
+      try {
+        usuariosData = await sbGet('usuarios','order=nombres.asc');
+        renderUsuarios();
+      } catch { mostrarToast('Error al cargar usuarios','error'); }
+    }
+
+    function renderUsuarios() {
+      const tbody = document.getElementById('tablaUsuariosAdmin');
+      if (!usuariosData.length) { tbody.innerHTML=`<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No hay usuarios</td></tr>`; return; }
+      tbody.innerHTML = usuariosData.map(u=>`
+        <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-medium whitespace-nowrap">${u.usuario}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300">${u.nombres}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${u.rol==='Admin'?'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300':u.rol==='Encargado'?'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300':'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}">${u.rol}</span>
+          </td>
+          <td class="px-4 py-3 text-gray-500 text-xs">${u.email||'-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${u.activo?'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${u.activo?'Activo':'Inactivo'}</span>
+          </td>
+          <td class="px-4 py-3">
+            <button onclick='abrirModalEditarUsuario(${JSON.stringify(u).replace(/'/g,"&#39;")})'
+              class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function abrirModalNuevoUsuario() {
+      modoUsuario='nuevo'; usuarioEditando=null;
+      document.getElementById('modalUsuarioTitulo').textContent = 'Nuevo Usuario';
+      ['muDni','muUsuario','muNombre','muContrasena','muEmail'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('muDni').readOnly=false; document.getElementById('muUsuario').readOnly=false;
+      document.getElementById('muRol').value='Operario'; document.getElementById('muActivo').value='true';
+      document.getElementById('muContrasena').placeholder='••••••••';
+      document.getElementById('muError').classList.add('hidden');
+      mostrarModal('modalUsuario');
+    }
+
+    function abrirModalEditarUsuario(usuario) {
+      modoUsuario='editar'; usuarioEditando=usuario;
+      document.getElementById('modalUsuarioTitulo').textContent = 'Editar Usuario';
+      document.getElementById('muDni').value=usuario.dni; document.getElementById('muDni').readOnly=true;
+      document.getElementById('muUsuario').value=usuario.usuario; document.getElementById('muUsuario').readOnly=true;
+      document.getElementById('muNombre').value=usuario.nombres;
+      document.getElementById('muRol').value=usuario.rol;
+      document.getElementById('muActivo').value=String(usuario.activo);
+      document.getElementById('muEmail').value=usuario.email||'';
+      document.getElementById('muContrasena').value='';
+      document.getElementById('muContrasena').placeholder='Dejar vacío para no cambiar';
+      document.getElementById('muError').classList.add('hidden');
+      mostrarModal('modalUsuario');
+    }
+
+    async function guardarUsuario() {
+      const dni=document.getElementById('muDni').value.trim();
+      const usuario=document.getElementById('muUsuario').value.trim();
+      const nombre=document.getElementById('muNombre').value.trim();
+      const rol=document.getElementById('muRol').value;
+      const activo=document.getElementById('muActivo').value==='true';
+      const contrasena=document.getElementById('muContrasena').value;
+      const email=document.getElementById('muEmail').value.trim();
+      const errEl=document.getElementById('muError');
+      if (!dni||!usuario||!nombre) { errEl.textContent='DNI, usuario y nombre son obligatorios'; errEl.classList.remove('hidden'); return; }
+      if (modoUsuario==='nuevo'&&!contrasena) { errEl.textContent='La contraseña es obligatoria'; errEl.classList.remove('hidden'); return; }
+
+      setLoadingUsuario(true);
+      try {
+        if (modoUsuario==='nuevo') {
+          const hash = await sha256(contrasena);
+          await sbPost('usuarios',{ dni, usuario, nombres:nombre, rol, password_hash:hash, email, activo });
+          mostrarToast('Usuario creado','success');
+        } else {
+          const campos = { nombres:nombre, rol, email, activo };
+          if (contrasena) campos.password_hash = await sha256(contrasena);
+          await sbPatch('usuarios', `dni=eq.${encodeURIComponent(dni)}`, campos);
+          mostrarToast('Usuario actualizado','success');
+        }
+        cerrarModal('modalUsuario'); usuariosData=[]; cargarUsuarios();
+      } catch(e) { errEl.textContent='Error al guardar. Verifica que el usuario/DNI no exista.'; errEl.classList.remove('hidden'); }
+      finally { setLoadingUsuario(false); }
+    }
+
+    // ── TIEMPOS ────────────────────────────────────────────────
+    async function cargarTiempos() {
+      try {
+        const data = await sbGet('tiempos','order=created_at.desc');
+        tiemposData = data.map(t=>({
+          numeroOrden:t.numero_orden, usuarioOperario:t.usuario_operario,
+          inicioOperario:t.inicio_operario, finOperario:t.fin_operario,
+          estado:t.estado, totalPausasMin:t.total_pausas_minutos, tiempoNetoMin:t.tiempo_neto_minutos, id:t.id,
+        }));
+        renderTiempos();
+      } catch { mostrarToast('Error al cargar tiempos','error'); }
+    }
+
+    function renderTiempos() {
+      const tbody = document.getElementById('tablaTiemposAdmin');
+      if (!tiemposData.length) { tbody.innerHTML=`<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">No hay registros</td></tr>`; return; }
+      const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
+      tbody.innerHTML = tiemposData.map(t=>`
+        <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${t.numeroOrden}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${t.usuarioOperario||'-'}</td>
+          <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${fmt(t.inicioOperario)}</td>
+          <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${fmt(t.finOperario)}</td>
+          <td class="px-4 py-3 font-medium whitespace-nowrap">${t.tiempoNetoMin!=null?formatMinutos(t.tiempoNetoMin):'-'}</td>
+          <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${t.totalPausasMin?formatMinutos(t.totalPausasMin):'0 min'}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${t.estado==='Completado'?'bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300':t.estado==='Pausado'?'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300':'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'}">${t.estado}</span>
+          </td>
+          <td class="px-4 py-3">
+            <button onclick='abrirModalEditarTiempo(${JSON.stringify(t).replace(/'/g,"&#39;")})'
+              class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function abrirModalEditarTiempo(tiempo) {
+      tiempoEditando=tiempo;
+      document.getElementById('mtNumero').value=tiempo.numeroOrden;
+      document.getElementById('mtOperario').value=tiempo.usuarioOperario||'';
+      document.getElementById('mtInicio').value=tiempo.inicioOperario?toDatetimeLocal(tiempo.inicioOperario):'';
+      document.getElementById('mtFin').value=tiempo.finOperario?toDatetimeLocal(tiempo.finOperario):'';
+      document.getElementById('mtPausas').value=tiempo.totalPausasMin||0;
+      document.getElementById('mtEstado').value=tiempo.estado||'En_Progreso';
+      document.getElementById('mtError').classList.add('hidden');
+      mostrarModal('modalTiempo');
+    }
+
+    async function guardarTiempo() {
+      const campos = {
+        inicio_operario: document.getElementById('mtInicio').value||null,
+        fin_operario:    document.getElementById('mtFin').value||null,
+        total_pausas_minutos: Number(document.getElementById('mtPausas').value)||0,
+        estado: document.getElementById('mtEstado').value,
+      };
+      try {
+        await sbPatch('tiempos', `id=eq.${tiempoEditando.id}`, campos);
+        cerrarModal('modalTiempo'); mostrarToast('Tiempo actualizado','success'); tiemposData=[]; cargarTiempos();
+      } catch { document.getElementById('mtError').textContent='Error al guardar'; document.getElementById('mtError').classList.remove('hidden'); }
+    }
+
+    // ── ÁREAS ──────────────────────────────────────────────────
+    async function cargarAreas() {
+      try {
+        const data = await sbGet('areas','order=nombre.asc');
+        areasData = data.map(a=>a.nombre);
+        renderAreas();
+      } catch { mostrarToast('Error al cargar áreas','error'); }
+    }
+
+    function renderAreas() {
+      const tbody = document.getElementById('tablaAreasAdmin');
+      if (!areasData.length) { tbody.innerHTML=`<tr><td colspan="2" class="px-4 py-10 text-center text-gray-400">No hay áreas registradas</td></tr>`; return; }
+      tbody.innerHTML = areasData.map(a=>`
+        <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+          <td class="px-4 py-3 font-medium">${a}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <button onclick="abrirModalEditarArea(${JSON.stringify(a).replace(/'/g,"&#39;")})"
+              class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function abrirModalNuevaArea() {
+      areaEditando=null;
+      document.getElementById('modalAreaTitulo').textContent='Nueva Área';
+      document.getElementById('maaNombre').value='';
+      document.getElementById('maaError').classList.add('hidden');
+      mostrarModal('modalAreaAdmin');
+    }
+    function abrirModalEditarArea(nombre) {
+      areaEditando=nombre;
+      document.getElementById('modalAreaTitulo').textContent='Editar Área';
+      document.getElementById('maaNombre').value=nombre;
+      document.getElementById('maaError').classList.add('hidden');
+      mostrarModal('modalAreaAdmin');
+    }
+
+    async function guardarArea() {
+      const nombre=document.getElementById('maaNombre').value.trim();
+      const errEl=document.getElementById('maaError');
+      if (!nombre) { errEl.textContent='El nombre del área es obligatorio'; errEl.classList.remove('hidden'); return; }
+      const setL = l => {
+        document.getElementById('btnGuardarArea').disabled=l;
+        document.getElementById('btnGuardarAreaTexto').textContent=l?'Guardando...':'Guardar';
+        document.getElementById('btnGuardarAreaSpinner').classList.toggle('hidden',!l);
+      };
+      setL(true);
+      try {
+        if (areaEditando) {
+          await sbPatch('areas',`nombre=eq.${encodeURIComponent(areaEditando)}`,{nombre});
+          mostrarToast('Área actualizada','success');
+        } else {
+          await sbPost('areas',{nombre});
+          mostrarToast('Área creada','success');
+        }
+        cerrarModal('modalAreaAdmin'); areasData=[]; cargarAreas();
+      } catch { errEl.textContent='Error al guardar. El nombre puede estar duplicado.'; errEl.classList.remove('hidden'); }
+      finally { setL(false); }
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────
+    function mostrarModal(id) { const m=document.getElementById(id); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function cerrarModal(id)  { const m=document.getElementById(id); m.classList.add('hidden'); m.classList.remove('flex'); }
+    function ejecutarEliminar() { if (pendingDeleteFn) pendingDeleteFn(); }
+
+    function setLoadingUsuario(l) {
+      document.getElementById('btnGuardarUsuario').disabled=l;
+      document.getElementById('btnGuardarUsuarioTexto').textContent=l?'Guardando...':'Guardar';
+      document.getElementById('btnGuardarUsuarioSpinner').classList.toggle('hidden',!l);
+    }
+
+    function toDatetimeLocal(iso) {
+      if (!iso) return '';
+      const d=new Date(iso), pad=n=>String(n).padStart(2,'0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function formatMinutos(min) {
+      if (!min||min<=0) return '0 min';
+      const h=Math.floor(min/60), m=Math.round(min%60);
+      return h>0?`${h}h ${m}min`:`${m} min`;
+    }
+
+    let toastTimer;
+    function mostrarToast(msg, tipo) {
+      const toast=document.getElementById('toast');
+      document.getElementById('toastInner').className=`flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ${tipo==='success'?'bg-green-600':'bg-red-600'}`;
+      document.getElementById('toastMsg').textContent=msg;
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>toast.classList.add('hidden'),3000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
