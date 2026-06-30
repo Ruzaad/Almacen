@@ -180,7 +180,7 @@
         localStorage.setItem('usuario', JSON.stringify(user));
         localStorage.setItem('lastActivity', Date.now());
 
-        const rutas = { Encargado: 'encargado.html', Operario: 'operario.html', Admin: 'admin.html' };
+        const rutas = { Encargado: 'encargado.html', Operario: 'operario.html', Admin: 'admin.html', Gerencia: 'gerencia.html' };
         window.location.href = rutas[user.rol] || 'index.html';
       } catch (err) {
         setLoading(false);

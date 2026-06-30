@@ -62,6 +62,11 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
+      <button onclick="abrirModalContrasena()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Cambiar contraseña">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/>
+        </svg>
+      </button>
       <button onclick="cerrarSesion()" class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
@@ -146,6 +151,16 @@
           <option value="Rechazada">Rechazada</option>
           <option value="Erronea">Errónea</option>
         </select>
+        <select id="filtroArea" onchange="filtrarOrdenes()"
+          class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+          <option value="">Todas las áreas</option>
+        </select>
+        <select id="filtroOperario" onchange="filtrarOrdenes()"
+          class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+          <option value="">Todos los operarios</option>
+        </select>
+        <input id="filtroFecha" type="date" onchange="filtrarOrdenes()"
+          class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
         <button onclick="recargarTodo()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
@@ -159,13 +174,13 @@
           <table class="w-full text-sm" style="min-width:900px">
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
               <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Orden</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">OF</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Área</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Operario</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Creación</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('numero')">N° Orden ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('of')">OF ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('usuarioEncargado')">Encargado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('area')">Área ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('usuarioAsignado')">Operario ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('estado')">Estado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPor('timestampCreacion')">Creación ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
@@ -210,6 +225,8 @@
           <option value="Iniciada">Iniciada</option>
           <option value="Completada">Completada</option>
         </select>
+        <input id="filtroFechaEntrega" type="date" onchange="filtrarEntregas()"
+          class="py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
         <button onclick="recargarTodo()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
@@ -364,6 +381,39 @@
     </div>
   </div>
 
+  <!-- MODAL CAMBIAR CONTRASEÑA -->
+  <div id="modalContrasena" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/40" onclick="cerrarModalContrasena()"></div>
+    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm">
+      <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <h3 class="text-base font-bold">Cambiar contraseña</h3>
+        <button onclick="cerrarModalContrasena()" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 space-y-3">
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-500">Nueva contraseña</label>
+          <input id="cpNueva" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-500">Confirmar nueva contraseña</label>
+          <input id="cpConfirmar" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div id="cpError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+          <span id="cpErrorText"></span>
+        </div>
+        <button onclick="guardarNuevaContrasena()"
+          class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+          style="background-color:#0D3B85">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div id="toast" class="fixed bottom-6 right-4 z-50 hidden">
     <div id="toastInner" class="flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white">
@@ -400,6 +450,7 @@
 
     // ── ESTADO ─────────────────────────────────────────────────
     let sesion = null, ordenesData = [], entregasData = [];
+    let ordenAscendente = true, ultimaColumnaOrden = null;
     let modoModal = 'nueva', ordenEditando = null;
     let panelPersonalAbierto = false;
     const INACTIVITY_MS = 4 * 60 * 60 * 1000;
@@ -479,6 +530,7 @@
         usuarioAsignado: o.usuario_asignado,
         estado: o.estado,
         of: o.of,
+        origen: o.origen,
         timestampCreacion: o.created_at,
         inicioEncargado: o.inicio_encargado,
         finalEncargado: o.final_encargado,
@@ -496,6 +548,53 @@
     }
 
     function recargarTodo() { cargarTodo(); }
+
+    // ── CAMBIAR CONTRASEÑA PROPIA ────────────────────────────────
+    async function sha256(texto) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    function abrirModalContrasena() {
+      document.getElementById('cpNueva').value = '';
+      document.getElementById('cpConfirmar').value = '';
+      document.getElementById('cpError').classList.add('hidden');
+      document.getElementById('modalContrasena').classList.remove('hidden');
+      document.getElementById('modalContrasena').classList.add('flex');
+    }
+    function cerrarModalContrasena() {
+      document.getElementById('modalContrasena').classList.add('hidden');
+      document.getElementById('modalContrasena').classList.remove('flex');
+    }
+    async function guardarNuevaContrasena() {
+      const nueva = document.getElementById('cpNueva').value;
+      const confirmar = document.getElementById('cpConfirmar').value;
+      const errEl = document.getElementById('cpError'), errText = document.getElementById('cpErrorText');
+      if (!nueva || nueva.length < 4) { errText.textContent = 'La contraseña debe tener al menos 4 caracteres.'; errEl.classList.remove('hidden'); return; }
+      if (nueva !== confirmar) { errText.textContent = 'Las contraseñas no coinciden.'; errEl.classList.remove('hidden'); return; }
+      errEl.classList.add('hidden');
+      try {
+        const hash = await sha256(nueva);
+        await sbPatch('usuarios', `usuario=eq.${encodeURIComponent(sesion.usuario)}`, { password_hash: hash });
+        mostrarToast('Contraseña actualizada', 'success');
+        cerrarModalContrasena();
+      } catch(e) {
+        errText.textContent = 'Error al actualizar la contraseña. Intenta de nuevo.';
+        errEl.classList.remove('hidden');
+      }
+    }
+    async function tomarOrden(numero) {
+      try {
+        await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(numero)}`, {
+          usuario_encargado: sesion.usuario,
+          estado: 'Registrada',
+          updated_at: now()
+        });
+        mostrarToast(`Orden ${numero} asignada a ti`, 'ok');
+        cargarTodo();
+      } catch(e) {
+        mostrarToast('Error al tomar la orden', 'error');
+      }
+    }
     function ocultarOverlay() { const el = document.getElementById('loadingOverlay'); if (el) el.style.display = 'none'; }
 
     function poblarSelectores(areas, operarios) {
@@ -510,6 +609,19 @@
       selOp.innerHTML = '<option value="">Sin asignar (quedará pendiente)</option>';
       operarios.forEach(op => { const opt = document.createElement('option'); opt.value = op.usuario; opt.textContent = op.nombres; selOp.appendChild(opt); });
       if (vO) selOp.value = vO;
+
+      // Selects de FILTRO (no del modal): mismas listas de áreas/operarios
+      const filtArea = document.getElementById('filtroArea');
+      const vFA = filtArea.value;
+      filtArea.innerHTML = '<option value="">Todas las áreas</option>';
+      areas.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; filtArea.appendChild(o); });
+      if (vFA) filtArea.value = vFA;
+
+      const filtOp = document.getElementById('filtroOperario');
+      const vFO = filtOp.value;
+      filtOp.innerHTML = '<option value="">Todos los operarios</option>';
+      operarios.forEach(op => { const opt = document.createElement('option'); opt.value = op.usuario; opt.textContent = op.nombres; filtOp.appendChild(opt); });
+      if (vFO) filtOp.value = vFO;
     }
 
     // ── SESIÓN ─────────────────────────────────────────────────
@@ -606,25 +718,51 @@
       document.getElementById('chevronPersonal').style.transform = panelPersonalAbierto ? 'rotate(180deg)' : '';
     }
 
+    // ── ORDENAR (clic en columna) ────────────────────────────────
+    function ordenarPor(campo) {
+      if (ultimaColumnaOrden === campo) { ordenAscendente = !ordenAscendente; }
+      else { ultimaColumnaOrden = campo; ordenAscendente = true; }
+      filtrarOrdenes();
+    }
+
     // ── FILTRAR ÓRDENES ────────────────────────────────────────
     function filtrarOrdenes() {
       const num = document.getElementById('filtroNumero').value.trim().toLowerCase();
       const of  = document.getElementById('filtroOF').value.trim().toLowerCase();
       const est = document.getElementById('filtroEstado').value;
+      const area = document.getElementById('filtroArea').value;
+      const operario = document.getElementById('filtroOperario').value;
+      const fecha = document.getElementById('filtroFecha').value;
       const ahora = new Date();
       const mes = ahora.getMonth(), anio = ahora.getFullYear();
 
       let filtradas = ordenesData.filter(o => {
-        if (o.usuarioEncargado !== sesion.usuario) return false;
+        // Las propias del Encargado, MÁS las que vienen de PCP YA APROBADAS por Gerencia
+        // (estado Asignada) sin Encargado asignado todavía. Las que aún están en
+        // Pendiente_Aprobacion_Gerencia NUNCA deben aparecer aquí: nadie puede tomar
+        // ni trabajar una orden de PCP hasta que Gerencia la apruebe explícitamente.
+        const esMia = o.usuarioEncargado === sesion.usuario;
+        const esDisponible = !o.usuarioEncargado && o.origen === 'PCP_Automatico' && o.estado === 'Asignada';
+        if (!esMia && !esDisponible) return false;
         const f = o.timestampCreacion ? new Date(o.timestampCreacion) : null;
         const esMes = f && f.getMonth()===mes && f.getFullYear()===anio;
         if (!esMes && !ESTADOS_ACTIVOS.includes(o.estado)) return false;
         const mN = !num || String(o.numero).toLowerCase().includes(num);
         const mO = !of  || (o.of && String(o.of).toLowerCase().includes(of));
         const mE = !est || o.estado === est;
-        return mN && mO && mE;
+        const mA = !area || o.area === area;
+        const mOp = !operario || o.usuarioAsignado === operario;
+        const mF = !fecha || (o.timestampCreacion && o.timestampCreacion.slice(0,10) === fecha);
+        return mN && mO && mE && mA && mOp && mF;
       });
-      filtradas.sort((a,b) => new Date(b.timestampCreacion||0) - new Date(a.timestampCreacion||0));
+      if (ultimaColumnaOrden) {
+        filtradas.sort((a,b) => {
+          const va = a[ultimaColumnaOrden] ?? '', vb = b[ultimaColumnaOrden] ?? '';
+          return ordenAscendente ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+        });
+      } else {
+        filtradas.sort((a,b) => new Date(b.timestampCreacion||0) - new Date(a.timestampCreacion||0));
+      }
       renderTabla(filtradas);
     }
 
@@ -636,12 +774,13 @@
       }
       const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
       tbody.innerHTML = ordenes.map(o => {
-        const esMio = sesion.rol==='Admin' || o.usuarioEncargado===sesion.usuario;
+        const esDisponible = !o.usuarioEncargado && o.origen === 'PCP_Automatico';
+        const esMio = sesion.rol==='Admin' || o.usuarioEncargado===sesion.usuario || esDisponible;
         return `
         <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
           <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${o.numero}</td>
           <td class="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">${o.of||'-'}</td>
-          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioEncargado}</td>
+          <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioEncargado || (esDisponible ? '<span class="text-amber-600 dark:text-amber-400 font-medium">Disponible</span>' : '-')}</td>
           <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.area||'-'}</td>
           <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioAsignado||'-'}</td>
           <td class="px-4 py-3 whitespace-nowrap">
@@ -657,6 +796,9 @@
 
     function getAccionesOrden(o) {
       const j = JSON.stringify(o).replace(/'/g,"&#39;");
+      if (!o.usuarioEncargado && o.origen === 'PCP_Automatico') return `
+        <button onclick='tomarOrden("${o.numero}")'
+          class="text-xs px-2.5 py-1.5 rounded-lg text-white font-semibold transition" style="background-color:#0D3B85">Tomar orden</button>`;
       if (o.estado === 'Registrada') return `
         <button onclick='abrirModalEditarInicio(${j})'
           class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
@@ -674,6 +816,7 @@
     function filtrarEntregas() {
       const num = document.getElementById('filtroNumeroEntrega').value.trim().toLowerCase();
       const est = document.getElementById('filtroEstadoEntrega').value;
+      const fecha = document.getElementById('filtroFechaEntrega').value;
       const ahora = new Date(); const mes = ahora.getMonth(), anio = ahora.getFullYear();
       let filtradas = entregasData.filter(e => {
         if (e.usuarioEncargado !== sesion.usuario) return false;
@@ -682,7 +825,8 @@
         if (!esMes && e.estado!=='Iniciada') return false;
         const mN = !num || String(e.numero).toLowerCase().includes(num);
         const mE = !est || e.estado===est;
-        return mN && mE;
+        const mF = !fecha || (e.timestampCreacion && e.timestampCreacion.slice(0,10) === fecha);
+        return mN && mE && mF;
       });
       filtradas.sort((a,b) => new Date(b.timestampCreacion||0) - new Date(a.timestampCreacion||0));
       renderTablaEntregas(filtradas);
@@ -775,7 +919,7 @@
       const operario = document.getElementById('modalOperario').value;
       const of4      = document.getElementById('modalOF').value.trim();
       if (!numero) { mostrarErrorModal('Ingresa el número de orden'); return; }
-      if (of4 && !/^\d{5}$/.test(of4)) { mostrarErrorModal('La O.F. debe ser exactamente 4 dígitos'); return; }
+      if (of4 && !/^\d{5}$/.test(of4)) { mostrarErrorModal('La O.F. debe ser exactamente 5 dígitos'); return; }
       const necesitaArea = modoModal==='finalizarDesdeTabla' || (modoModal==='nueva' && esFinal);
       if (necesitaArea && !area) { mostrarErrorModal('El área es obligatoria'); return; }
 

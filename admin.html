@@ -44,6 +44,11 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
+      <button onclick="abrirModalContrasena()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Cambiar contraseña">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/>
+        </svg>
+      </button>
       <button onclick="cerrarSesion()" class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
@@ -171,13 +176,13 @@
           <table class="w-full text-sm" style="min-width:900px">
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
               <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Orden</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">OF</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Área</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Operario</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Creación</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('numero')">N° Orden ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('of')">OF ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('usuarioEncargado')">Encargado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('area')">Área ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('usuarioAsignado')">Operario ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('estado')">Estado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('timestampCreacion')">Creación ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
@@ -212,11 +217,11 @@
           <table class="w-full text-sm" style="min-width:700px">
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
               <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Entrega</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Encargado</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Inicio</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Final</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorEntregas('numero')">N° Entrega ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorEntregas('usuarioEncargado')">Encargado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorEntregas('estado')">Estado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorEntregas('inicio')">Inicio ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorEntregas('final')">Final ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">T. Total</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
@@ -243,11 +248,11 @@
           <table class="w-full text-sm" style="min-width:600px">
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
               <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Usuario</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Nombre</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Rol</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Email</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorUsuarios('usuario')">Usuario ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorUsuarios('nombres')">Nombre ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorUsuarios('rol')">Rol ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorUsuarios('email')">Email ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorUsuarios('activo')">Estado ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
@@ -271,13 +276,13 @@
           <table class="w-full text-sm" style="min-width:750px">
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
               <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">N° Orden</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Operario</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Inicio</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Fin</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">T. Neto</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Pausas</th>
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Estado</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('numeroOrden')">N° Orden ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('usuarioOperario')">Operario ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('inicioOperario')">Inicio ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('finOperario')">Fin ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('tiempoNetoMin')">T. Neto ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('totalPausasMin')">Pausas ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorTiempos('estado')">Estado ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
@@ -306,7 +311,7 @@
           <table class="w-full text-sm" style="min-width:320px">
             <thead class="sticky top-0 z-10 bg-white dark:bg-gray-900">
               <tr class="border-b border-gray-100 dark:border-gray-800 text-left">
-                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400">Nombre del Área</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorAreas()">Nombre del Área ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
             </thead>
@@ -332,7 +337,7 @@
         <div><label class="block text-sm font-medium mb-1">OF (últimos 4 dígitos)</label>
           <div class="flex">
             <span class="px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm text-gray-500 font-mono">400000</span>
-            <input id="moOF" type="text" inputmode="numeric" maxlength="4" placeholder="0000" class="w-full px-3 py-2.5 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)"/>
+            <input id="moOF" type="text" inputmode="numeric" maxlength="5" placeholder="00000" class="w-full px-3 py-2.5 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="this.value=this.value.replace(/\D/g,'').slice(0,5)"/>
           </div></div>
         <div><label class="block text-sm font-medium mb-1">Estado</label>
           <select id="moEstado" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
@@ -518,6 +523,39 @@
     </div>
   </div>
 
+  <!-- MODAL CAMBIAR CONTRASEÑA -->
+  <div id="modalContrasena" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/40" onclick="cerrarModalContrasena()"></div>
+    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm">
+      <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <h3 class="text-base font-bold">Cambiar contraseña</h3>
+        <button onclick="cerrarModalContrasena()" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 space-y-3">
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-500">Nueva contraseña</label>
+          <input id="cpNueva" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-500">Confirmar nueva contraseña</label>
+          <input id="cpConfirmar" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div id="cpError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+          <span id="cpErrorText"></span>
+        </div>
+        <button onclick="guardarNuevaContrasena()"
+          class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+          style="background-color:#0D3B85">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div id="toast" class="fixed bottom-6 right-4 z-50 hidden">
     <div id="toastInner" class="flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white">
@@ -609,6 +647,36 @@
     function cerrarSesion() {
       localStorage.removeItem('usuario'); localStorage.removeItem('lastActivity');
       window.location.href = 'index.html';
+    }
+
+    // ── CAMBIAR CONTRASEÑA PROPIA (sha256 ya existe más abajo en este archivo) ──
+    function abrirModalContrasena() {
+      document.getElementById('cpNueva').value = '';
+      document.getElementById('cpConfirmar').value = '';
+      document.getElementById('cpError').classList.add('hidden');
+      document.getElementById('modalContrasena').classList.remove('hidden');
+      document.getElementById('modalContrasena').classList.add('flex');
+    }
+    function cerrarModalContrasena() {
+      document.getElementById('modalContrasena').classList.add('hidden');
+      document.getElementById('modalContrasena').classList.remove('flex');
+    }
+    async function guardarNuevaContrasena() {
+      const nueva = document.getElementById('cpNueva').value;
+      const confirmar = document.getElementById('cpConfirmar').value;
+      const errEl = document.getElementById('cpError'), errText = document.getElementById('cpErrorText');
+      if (!nueva || nueva.length < 4) { errText.textContent = 'La contraseña debe tener al menos 4 caracteres.'; errEl.classList.remove('hidden'); return; }
+      if (nueva !== confirmar) { errText.textContent = 'Las contraseñas no coinciden.'; errEl.classList.remove('hidden'); return; }
+      errEl.classList.add('hidden');
+      try {
+        const hash = await sha256(nueva);
+        await sbPatch('usuarios', `usuario=eq.${encodeURIComponent(sesion.usuario)}`, { password_hash: hash });
+        mostrarToast('Contraseña actualizada', 'success');
+        cerrarModalContrasena();
+      } catch(e) {
+        errText.textContent = 'Error al actualizar la contraseña. Intenta de nuevo.';
+        errEl.classList.remove('hidden');
+      }
     }
 
     // ── TABS ───────────────────────────────────────────────────
@@ -725,6 +793,12 @@
       } catch { mostrarToast('Error al cargar órdenes','error'); }
     }
 
+    let ordenAscOrdenes = true, ordenColOrdenes = null;
+    function ordenarPorOrdenes(campo) {
+      if (ordenColOrdenes === campo) ordenAscOrdenes = !ordenAscOrdenes;
+      else { ordenColOrdenes = campo; ordenAscOrdenes = true; }
+      filtrarOrdenes();
+    }
     function filtrarOrdenes() {
       const num = document.getElementById('filtroNumeroAdmin').value.trim().toLowerCase();
       const of  = document.getElementById('filtroOFAdmin').value.trim().toLowerCase();
@@ -734,7 +808,14 @@
         (!of  || (o.of && String(o.of).toLowerCase().includes(of))) &&
         (!est || o.estado === est)
       );
-      f.sort((a,b)=>new Date(b.timestampCreacion||0)-new Date(a.timestampCreacion||0));
+      if (ordenColOrdenes) {
+        f.sort((a,b) => {
+          const va = a[ordenColOrdenes] ?? '', vb = b[ordenColOrdenes] ?? '';
+          return ordenAscOrdenes ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+        });
+      } else {
+        f.sort((a,b)=>new Date(b.timestampCreacion||0)-new Date(a.timestampCreacion||0));
+      }
       renderOrdenes(f);
     }
 
@@ -809,7 +890,7 @@
       const of4    = document.getElementById('moOF').value.trim();
       const errEl  = document.getElementById('moError');
       if (!numero) { errEl.textContent='Ingresa el N° de orden'; errEl.classList.remove('hidden'); return; }
-      if (of4 && !/^\d{4}$/.test(of4)) { errEl.textContent='La OF debe ser 4 dígitos'; errEl.classList.remove('hidden'); return; }
+      if (of4 && !/^\d{5}$/.test(of4)) { errEl.textContent='La OF debe ser 5 dígitos'; errEl.classList.remove('hidden'); return; }
       const campos = {
         estado: document.getElementById('moEstado').value,
         area: document.getElementById('moArea').value || null,
@@ -851,11 +932,24 @@
       } catch { mostrarToast('Error al cargar entregas','error'); }
     }
 
+    let ordenAscEntregas = true, ordenColEntregas = null;
+    function ordenarPorEntregas(campo) {
+      if (ordenColEntregas === campo) ordenAscEntregas = !ordenAscEntregas;
+      else { ordenColEntregas = campo; ordenAscEntregas = true; }
+      filtrarEntregas();
+    }
     function filtrarEntregas() {
       const num = document.getElementById('filtroNumeroEntregaAdmin').value.trim().toLowerCase();
       const est = document.getElementById('filtroEstadoEntregaAdmin').value;
       let f = entregasData.filter(e => (!num||String(e.numero).toLowerCase().includes(num)) && (!est||e.estado===est));
-      f.sort((a,b)=>new Date(b.timestampCreacion||0)-new Date(a.timestampCreacion||0));
+      if (ordenColEntregas) {
+        f.sort((a,b) => {
+          const va = a[ordenColEntregas] ?? '', vb = b[ordenColEntregas] ?? '';
+          return ordenAscEntregas ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+        });
+      } else {
+        f.sort((a,b)=>new Date(b.timestampCreacion||0)-new Date(a.timestampCreacion||0));
+      }
       renderEntregas(f);
     }
 
@@ -921,10 +1015,23 @@
       } catch { mostrarToast('Error al cargar usuarios','error'); }
     }
 
+    let ordenAscUsuarios = true, ordenColUsuarios = null;
+    function ordenarPorUsuarios(campo) {
+      if (ordenColUsuarios === campo) ordenAscUsuarios = !ordenAscUsuarios;
+      else { ordenColUsuarios = campo; ordenAscUsuarios = true; }
+      renderUsuarios();
+    }
     function renderUsuarios() {
       const tbody = document.getElementById('tablaUsuariosAdmin');
       if (!usuariosData.length) { tbody.innerHTML=`<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">No hay usuarios</td></tr>`; return; }
-      tbody.innerHTML = usuariosData.map(u=>`
+      let lista = usuariosData;
+      if (ordenColUsuarios) {
+        lista = [...usuariosData].sort((a,b) => {
+          const va = a[ordenColUsuarios] ?? '', vb = b[ordenColUsuarios] ?? '';
+          return ordenAscUsuarios ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+        });
+      }
+      tbody.innerHTML = lista.map(u=>`
         <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
           <td class="px-4 py-3 font-medium whitespace-nowrap">${u.usuario}</td>
           <td class="px-4 py-3 text-gray-600 dark:text-gray-300">${u.nombres}</td>
@@ -1010,11 +1117,24 @@
       } catch { mostrarToast('Error al cargar tiempos','error'); }
     }
 
+    let ordenAscTiempos = true, ordenColTiempos = null;
+    function ordenarPorTiempos(campo) {
+      if (ordenColTiempos === campo) ordenAscTiempos = !ordenAscTiempos;
+      else { ordenColTiempos = campo; ordenAscTiempos = true; }
+      renderTiempos();
+    }
     function renderTiempos() {
       const tbody = document.getElementById('tablaTiemposAdmin');
       if (!tiemposData.length) { tbody.innerHTML=`<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">No hay registros</td></tr>`; return; }
       const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
-      tbody.innerHTML = tiemposData.map(t=>`
+      let lista = tiemposData;
+      if (ordenColTiempos) {
+        lista = [...tiemposData].sort((a,b) => {
+          const va = a[ordenColTiempos] ?? '', vb = b[ordenColTiempos] ?? '';
+          return ordenAscTiempos ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+        });
+      }
+      tbody.innerHTML = lista.map(t=>`
         <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
           <td class="px-4 py-3 font-mono font-semibold whitespace-nowrap">${t.numeroOrden}</td>
           <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${t.usuarioOperario||'-'}</td>
@@ -1066,10 +1186,16 @@
       } catch { mostrarToast('Error al cargar áreas','error'); }
     }
 
+    let ordenAscAreas = true;
+    function ordenarPorAreas() {
+      ordenAscAreas = !ordenAscAreas;
+      renderAreas();
+    }
     function renderAreas() {
       const tbody = document.getElementById('tablaAreasAdmin');
       if (!areasData.length) { tbody.innerHTML=`<tr><td colspan="2" class="px-4 py-10 text-center text-gray-400">No hay áreas registradas</td></tr>`; return; }
-      tbody.innerHTML = areasData.map(a=>`
+      const lista = [...areasData].sort((a,b) => ordenAscAreas ? a.localeCompare(b) : b.localeCompare(a));
+      tbody.innerHTML = lista.map(a=>`
         <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
           <td class="px-4 py-3 font-medium">${a}</td>
           <td class="px-4 py-3 whitespace-nowrap">

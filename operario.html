@@ -61,6 +61,11 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
       </button>
+      <button onclick="abrirModalContrasena()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition" title="Cambiar contraseña">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"/>
+        </svg>
+      </button>
       <button onclick="cerrarSesion()" class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
@@ -104,6 +109,14 @@
         class="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">Pausadas</button>
       <button onclick="setFiltro('Completada')" id="filtroCompletada"
         class="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">Completadas</button>
+    </div>
+
+    <div class="flex justify-end mb-3">
+      <select id="ordenLista" onchange="renderOrdenes()"
+        class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition">
+        <option value="reciente">Más reciente primero</option>
+        <option value="antiguo">Más antiguo primero</option>
+      </select>
     </div>
 
     <div id="listaOrdenes" class="space-y-3">
@@ -156,6 +169,55 @@
     </div>
   </div>
 
+  <!-- MODAL DETALLE DE MATERIALES -->
+  <div id="modalMateriales" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModalMateriales()"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl z-10 max-h-[80vh] overflow-y-auto">
+      <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-900">
+        <h3 class="text-base font-bold">Materiales de la orden <span id="matNumeroOrden" class="font-mono"></span></h3>
+        <button onclick="cerrarModalMateriales()" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="matLista" class="p-4 space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- MODAL CAMBIAR CONTRASEÑA -->
+  <div id="modalContrasena" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/40" onclick="cerrarModalContrasena()"></div>
+    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-sm">
+      <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <h3 class="text-base font-bold">Cambiar contraseña</h3>
+        <button onclick="cerrarModalContrasena()" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 space-y-3">
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-500">Nueva contraseña</label>
+          <input id="cpNueva" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1 text-gray-500">Confirmar nueva contraseña</label>
+          <input id="cpConfirmar" type="password" placeholder="••••••••"
+            class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition"/>
+        </div>
+        <div id="cpError" class="hidden text-sm text-red-500 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+          <span id="cpErrorText"></span>
+        </div>
+        <button onclick="guardarNuevaContrasena()"
+          class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+          style="background-color:#0D3B85">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div id="toast" class="fixed bottom-6 right-4 z-50 hidden">
     <div id="toastInner" class="flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white">
@@ -194,13 +256,15 @@
     let db;
     async function initDB() {
       return new Promise((res, rej) => {
-        const req = indexedDB.open('almacen_operario', 1);
+        const req = indexedDB.open('almacen_operario', 2);
         req.onupgradeneeded = e => {
           const d = e.target.result;
           if (!d.objectStoreNames.contains('ordenes'))
             d.createObjectStore('ordenes', { keyPath: 'numero_orden' });
           if (!d.objectStoreNames.contains('cola'))
             d.createObjectStore('cola', { autoIncrement: true });
+          if (!d.objectStoreNames.contains('materiales'))
+            d.createObjectStore('materiales', { keyPath: 'id' });
         };
         req.onsuccess = e => { db = e.target.result; res(db); };
         req.onerror  = () => rej(req.error);
@@ -229,7 +293,7 @@
     }
 
     // ── ESTADO ─────────────────────────────────────────────────
-    let sesion = null, ordenesData = [], tiemposData = [];
+    let sesion = null, ordenesData = [], tiemposData = [], materialesData = [];
     let filtroActivo = 'Asignada', ordenPausando = null;
     let isOnline = navigator.onLine;
     const INACTIVITY_MS = 4 * 60 * 60 * 1000;
@@ -281,16 +345,20 @@
     // ── CARGA ONLINE ───────────────────────────────────────────
     async function cargarOrdenes() {
       try {
-        const [ordenes, tiempos] = await Promise.all([
+        const [ordenes, tiempos, materiales] = await Promise.all([
           sbGet('ordenes', `usuario_asignado=eq.${encodeURIComponent(sesion.usuario)}&order=created_at.desc`),
           sbGet('tiempos', `usuario_operario=eq.${encodeURIComponent(sesion.usuario)}&order=created_at.desc`),
+          sbGet('notas_entrega_detalle', `order=posicion.asc`),
         ]);
         // Guardar en cache IndexedDB
         await dbClear('ordenes');
         for (const o of ordenes) await dbPut('ordenes', o);
+        await dbClear('materiales');
+        for (const m of materiales) await dbPut('materiales', m);
 
         ordenesData = ordenes.map(normalizeOrden);
         tiemposData = tiempos.map(normalizeTiempo);
+        materialesData = materiales;
         renderOrdenes();
         ocultarOverlay();
       } catch(e) {
@@ -304,7 +372,9 @@
     async function cargarDesdeCache() {
       try {
         const ordenes = await dbGetAll('ordenes');
+        const materiales = await dbGetAll('materiales');
         ordenesData = ordenes.map(normalizeOrden);
+        materialesData = materiales;
         renderOrdenes();
         mostrarToast('Mostrando datos guardados (sin red)', 'error');
       } catch { mostrarToast('Sin datos disponibles offline', 'error'); }
@@ -361,6 +431,8 @@
           await sbPatch('tiempos', `id=eq.${t.id}`, { fin_operario: accion.ts, estado:'Completado', tiempo_neto_minutos: neto });
           await sbPatch('ordenes', `numero_orden=eq.${encodeURIComponent(accion.numero)}`, { estado:'Completada', fin_operario: accion.ts, updated_at: accion.ts });
         }
+      } else if (accion.tipo === 'marcarConseguido') {
+        await sbPatch('notas_entrega_detalle', `id=eq.${accion.id}`, { conseguido: accion.valor });
       }
     }
 
@@ -390,6 +462,40 @@
     function cerrarSesion() {
       localStorage.removeItem('usuario'); localStorage.removeItem('lastActivity');
       window.location.href = 'index.html';
+    }
+
+    // ── CAMBIAR CONTRASEÑA PROPIA ────────────────────────────────
+    async function sha256(texto) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    function abrirModalContrasena() {
+      document.getElementById('cpNueva').value = '';
+      document.getElementById('cpConfirmar').value = '';
+      document.getElementById('cpError').classList.add('hidden');
+      document.getElementById('modalContrasena').classList.remove('hidden');
+      document.getElementById('modalContrasena').classList.add('flex');
+    }
+    function cerrarModalContrasena() {
+      document.getElementById('modalContrasena').classList.add('hidden');
+      document.getElementById('modalContrasena').classList.remove('flex');
+    }
+    async function guardarNuevaContrasena() {
+      const nueva = document.getElementById('cpNueva').value;
+      const confirmar = document.getElementById('cpConfirmar').value;
+      const errEl = document.getElementById('cpError'), errText = document.getElementById('cpErrorText');
+      if (!nueva || nueva.length < 4) { errText.textContent = 'La contraseña debe tener al menos 4 caracteres.'; errEl.classList.remove('hidden'); return; }
+      if (nueva !== confirmar) { errText.textContent = 'Las contraseñas no coinciden.'; errEl.classList.remove('hidden'); return; }
+      errEl.classList.add('hidden');
+      try {
+        const hash = await sha256(nueva);
+        await sbPatch('usuarios', `usuario=eq.${encodeURIComponent(sesion.usuario)}`, { password_hash: hash });
+        mostrarToast('Contraseña actualizada', 'success');
+        cerrarModalContrasena();
+      } catch(e) {
+        errText.textContent = 'Error al actualizar la contraseña. Intenta de nuevo.';
+        errEl.classList.remove('hidden');
+      }
     }
 
     // ── TEMA ───────────────────────────────────────────────────
@@ -428,6 +534,12 @@
       const lista = document.getElementById('listaOrdenes');
       let ordenes = ordenesData;
       if (filtroActivo) ordenes = ordenes.filter(o => o.estado === filtroActivo);
+      const orden = document.getElementById('ordenLista')?.value || 'reciente';
+      ordenes = [...ordenes].sort((a,b) => {
+        const fa = a.timestampEdicion ? new Date(a.timestampEdicion) : 0;
+        const fb = b.timestampEdicion ? new Date(b.timestampEdicion) : 0;
+        return orden === 'reciente' ? fb - fa : fa - fb;
+      });
       if (!ordenes.length) {
         lista.innerHTML = `<div class="bg-white dark:bg-gray-900 rounded-2xl p-8 text-center text-gray-400">No hay órdenes en este estado</div>`;
         return;
@@ -459,7 +571,12 @@
             <span class="px-2.5 py-1 rounded-full text-xs font-medium ${BADGE[o.estado]||''}">${LABEL[o.estado]||o.estado}</span>
           </div>
           ${pausaWarning}
-          <div class="flex flex-wrap gap-2 mt-4">${getBotones(o, tiempo)}</div>
+          <div class="flex flex-wrap gap-2 mt-4">
+            ${getBotones(o, tiempo)}
+            <button onclick="abrirModalMateriales('${o.numero}')"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 transition hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-95">
+              Ver materiales</button>
+          </div>
         </div>`;
       }).join('');
     }
@@ -489,6 +606,49 @@
           class="flex-1 py-2 rounded-xl text-sm border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
           Ver resumen</button>`;
       return '';
+    }
+
+    // ── MODAL MATERIALES ─────────────────────────────────────
+    function abrirModalMateriales(numeroOrden) {
+      document.getElementById('matNumeroOrden').textContent = numeroOrden;
+      renderMateriales(numeroOrden);
+      document.getElementById('modalMateriales').classList.remove('hidden');
+      document.getElementById('modalMateriales').classList.add('flex');
+    }
+    function cerrarModalMateriales() {
+      document.getElementById('modalMateriales').classList.add('hidden');
+      document.getElementById('modalMateriales').classList.remove('flex');
+    }
+    function renderMateriales(numeroOrden) {
+      const lista = document.getElementById('matLista');
+      const filas = materialesData.filter(m => String(m.numero_orden) === String(numeroOrden));
+      if (!filas.length) {
+        lista.innerHTML = `<p class="text-center text-gray-400 text-sm py-6">Sin materiales registrados para esta orden</p>`;
+        return;
+      }
+      lista.innerHTML = filas.map(f => `
+        <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 ${f.conseguido ? 'bg-teal-50 dark:bg-teal-950/30' : ''} cursor-pointer">
+          <input type="checkbox" ${f.conseguido ? 'checked' : ''} onchange="toggleMaterialConseguido('${f.id}', this.checked)"
+            class="mt-0.5 w-5 h-5 rounded accent-[#0D3B85] shrink-0"/>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium ${f.conseguido ? 'line-through text-gray-400' : ''}">${f.denominacion_material||'-'}</p>
+            <p class="text-xs text-gray-400 font-mono">${f.codigo_material||'-'} · ${f.cantidad ?? '-'} ${f.unidad_medida||''}</p>
+          </div>
+        </label>`).join('');
+    }
+    async function toggleMaterialConseguido(id, valor) {
+      // Optimista: actualizar local de inmediato
+      const fila = materialesData.find(m => String(m.id) === String(id));
+      if (fila) fila.conseguido = valor;
+      await dbPut('materiales', fila);
+      const accion = { tipo:'marcarConseguido', id, valor, ts: ts() };
+      if (!isOnline) { await dbPut('cola', accion); mostrarToast('Guardado offline — se sincronizará al recuperar conexión', 'success'); return; }
+      try {
+        await ejecutarAccion(accion);
+      } catch {
+        await dbPut('cola', accion);
+        mostrarToast('Sin conexión — se sincronizará después', 'error');
+      }
     }
 
     // ── ACCIONES (optimista + cola offline) ────────────────────
