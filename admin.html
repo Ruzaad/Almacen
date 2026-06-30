@@ -182,6 +182,7 @@
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('area')">Área ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('usuarioAsignado')">Operario ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('estado')">Estado ⇕</th>
+                <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('inicioEncargado')">Inicio Encargado ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap cursor-pointer hover:text-[#0D3B85]" onclick="ordenarPorOrdenes('timestampCreacion')">Creación ⇕</th>
                 <th class="px-4 py-3 font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">Acciones</th>
               </tr>
@@ -334,10 +335,10 @@
       <div class="space-y-4">
         <div><label class="block text-sm font-medium mb-1">N° Orden</label>
           <input id="moNumero" type="text" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-sm text-gray-500"/></div>
-        <div><label class="block text-sm font-medium mb-1">OF (últimos 4 dígitos)</label>
+        <div><label class="block text-sm font-medium mb-1">OF (últimos 9 dígitos)</label>
           <div class="flex">
-            <span class="px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm text-gray-500 font-mono">400000</span>
-            <input id="moOF" type="text" inputmode="numeric" maxlength="5" placeholder="00000" class="w-full px-3 py-2.5 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="this.value=this.value.replace(/\D/g,'').slice(0,5)"/>
+            <span class="px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-sm text-gray-500 font-mono">4</span>
+            <input id="moOF" type="text" inputmode="numeric" maxlength="9" placeholder="000000000" class="w-full px-3 py-2.5 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56B4] transition" oninput="this.value=this.value.replace(/\D/g,'').slice(0,9)"/>
           </div></div>
         <div><label class="block text-sm font-medium mb-1">Estado</label>
           <select id="moEstado" class="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56B4]">
@@ -507,6 +508,18 @@
     </div>
   </div>
 
+  <!-- MODAL MATERIALES (solo lectura) -->
+  <div id="modalMateriales" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="cerrarModal('modalMateriales')"></div>
+    <div class="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 z-10 max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-bold">Materiales de la orden <span id="matNumeroOrden" class="font-mono"></span></h3>
+        <button onclick="cerrarModal('modalMateriales')" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div id="matLista" class="space-y-2"></div>
+    </div>
+  </div>
+
   <!-- MODAL CONFIRMACIÓN ELIMINAR -->
   <div id="modalConfirm" class="fixed inset-0 z-50 hidden items-center justify-center px-4">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
@@ -601,7 +614,7 @@
 
     // ── ESTADO ─────────────────────────────────────────────────
     let sesion = null;
-    let ordenesData=[], entregasData=[], usuariosData=[], tiemposData=[], areasData=[];
+    let ordenesData=[], entregasData=[], usuariosData=[], tiemposData=[], areasData=[], materialesData=[];
     let areaEditando=null, ordenEditando=null, entregaEditando=null, tiempoEditando=null, usuarioEditando=null;
     let modoUsuario='nuevo', pendingDeleteFn=null;
 
@@ -793,6 +806,35 @@
       } catch { mostrarToast('Error al cargar órdenes','error'); }
     }
 
+    // ── MATERIALES (solo lectura) ───────────────────────────────
+    async function abrirModalMateriales(numeroOrden) {
+      document.getElementById('matNumeroOrden').textContent = numeroOrden;
+      document.getElementById('matLista').innerHTML = `<p class="text-center text-gray-400 text-sm py-6">Cargando…</p>`;
+      mostrarModal('modalMateriales');
+      try {
+        const data = await sbGet('notas_entrega_detalle', `numero_orden=eq.${encodeURIComponent(numeroOrden)}`);
+        renderMateriales(data);
+      } catch {
+        document.getElementById('matLista').innerHTML = `<p class="text-center text-red-400 text-sm py-6">Error al cargar materiales</p>`;
+      }
+    }
+    function renderMateriales(filas) {
+      const lista = document.getElementById('matLista');
+      if (!filas?.length) {
+        lista.innerHTML = `<p class="text-center text-gray-400 text-sm py-6">Sin materiales registrados para esta orden</p>`;
+        return;
+      }
+      lista.innerHTML = filas.map(f => `
+        <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 ${f.conseguido ? 'bg-teal-50 dark:bg-teal-950/30' : ''}">
+          <input type="checkbox" disabled ${f.conseguido ? 'checked' : ''}
+            class="mt-0.5 w-5 h-5 rounded accent-[#0D3B85] shrink-0 opacity-80 cursor-not-allowed"/>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium ${f.conseguido ? 'line-through text-gray-400' : ''}">${f.denominacion_material||'-'}</p>
+            <p class="text-xs text-gray-400 font-mono">${f.codigo_material||'-'} · ${f.cantidad ?? '-'} ${f.unidad_medida||''}</p>
+          </div>
+        </div>`).join('');
+    }
+
     let ordenAscOrdenes = true, ordenColOrdenes = null;
     function ordenarPorOrdenes(campo) {
       if (ordenColOrdenes === campo) ordenAscOrdenes = !ordenAscOrdenes;
@@ -821,7 +863,7 @@
 
     function renderOrdenes(ordenes) {
       const tbody = document.getElementById('tablaOrdenesAdmin');
-      if (!ordenes?.length) { tbody.innerHTML=`<tr><td colspan="8" class="px-4 py-10 text-center text-gray-400">No hay órdenes</td></tr>`; return; }
+      if (!ordenes?.length) { tbody.innerHTML=`<tr><td colspan="9" class="px-4 py-10 text-center text-gray-400">No hay órdenes</td></tr>`; return; }
       const fmt = d => d ? new Date(d).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}) : '-';
       tbody.innerHTML = ordenes.map(o=>`
         <tr class="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
@@ -831,10 +873,13 @@
           <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.area||'-'}</td>
           <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">${o.usuarioAsignado||'-'}</td>
           <td class="px-4 py-3 whitespace-nowrap"><span class="px-2 py-1 rounded-full text-xs font-medium ${BADGE[o.estado]||''}">${LABEL[o.estado]||o.estado}</span></td>
+          <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${fmt(o.inicioEncargado)}</td>
           <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">${fmt(o.timestampCreacion)}</td>
           <td class="px-4 py-3 whitespace-nowrap">
             <button onclick='abrirModalEditarOrden(${JSON.stringify(o).replace(/'/g,"&#39;")})'
               class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Editar</button>
+            <button onclick="abrirModalMateriales('${o.numero}')"
+              class="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition ml-1">Materiales</button>
           </td>
         </tr>`).join('');
     }
@@ -856,7 +901,7 @@
       ordenEditando = orden;
       document.getElementById('modalOrdenTitulo').textContent = 'Editar Orden';
       document.getElementById('moNumero').value = orden.numero; document.getElementById('moNumero').readOnly = true;
-      document.getElementById('moOF').value = orden.of ? String(orden.of).slice(-4) : '';
+      document.getElementById('moOF').value = orden.of ? String(orden.of).replace(/^4/, '') : '';
       document.getElementById('moEstado').value = orden.estado;
       document.getElementById('moInicioEnc').value = orden.inicioEncargado ? toDatetimeLocal(orden.inicioEncargado) : '';
       document.getElementById('moFinalEnc').value  = orden.finalEncargado  ? toDatetimeLocal(orden.finalEncargado)  : '';
@@ -890,14 +935,14 @@
       const of4    = document.getElementById('moOF').value.trim();
       const errEl  = document.getElementById('moError');
       if (!numero) { errEl.textContent='Ingresa el N° de orden'; errEl.classList.remove('hidden'); return; }
-      if (of4 && !/^\d{5}$/.test(of4)) { errEl.textContent='La OF debe ser 5 dígitos'; errEl.classList.remove('hidden'); return; }
+      if (of4 && !/^\d{9}$/.test(of4)) { errEl.textContent='La OF debe ser 9 dígitos'; errEl.classList.remove('hidden'); return; }
       const campos = {
         estado: document.getElementById('moEstado').value,
         area: document.getElementById('moArea').value || null,
         usuario_asignado: document.getElementById('moOperario').value || null,
         inicio_encargado: document.getElementById('moInicioEnc').value || null,
         final_encargado:  document.getElementById('moFinalEnc').value  || null,
-        of: of4 ? `400000${of4}` : null,
+        of: of4 ? `4${of4}` : null,
         updated_at: now(),
       };
       try {

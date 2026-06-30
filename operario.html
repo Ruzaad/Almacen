@@ -622,13 +622,15 @@
     function renderMateriales(numeroOrden) {
       const lista = document.getElementById('matLista');
       const filas = materialesData.filter(m => String(m.numero_orden) === String(numeroOrden));
+      const orden = ordenesData.find(o => String(o.numero) === String(numeroOrden));
+      const editable = orden && ['En_Progreso','Pausada'].includes(orden.estado);
       if (!filas.length) {
         lista.innerHTML = `<p class="text-center text-gray-400 text-sm py-6">Sin materiales registrados para esta orden</p>`;
         return;
       }
-      lista.innerHTML = filas.map(f => `
-        <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 ${f.conseguido ? 'bg-teal-50 dark:bg-teal-950/30' : ''} cursor-pointer">
-          <input type="checkbox" ${f.conseguido ? 'checked' : ''} onchange="toggleMaterialConseguido('${f.id}', this.checked)"
+      lista.innerHTML = (!editable ? `<p class="text-xs text-amber-600 dark:text-amber-400 mb-2">${orden?.estado === 'Asignada' ? 'Debes aceptar (Comenzar) la orden antes de marcar materiales.' : 'Orden finalizada — los checks ya no se pueden modificar.'}</p>` : '') + filas.map(f => `
+        <label class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 ${f.conseguido ? 'bg-teal-50 dark:bg-teal-950/30' : ''} ${editable ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}">
+          <input type="checkbox" ${f.conseguido ? 'checked' : ''} ${editable ? '' : 'disabled'} onchange="toggleMaterialConseguido('${f.id}', this.checked)"
             class="mt-0.5 w-5 h-5 rounded accent-[#0D3B85] shrink-0"/>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium ${f.conseguido ? 'line-through text-gray-400' : ''}">${f.denominacion_material||'-'}</p>
@@ -637,9 +639,16 @@
         </label>`).join('');
     }
     async function toggleMaterialConseguido(id, valor) {
-      // Optimista: actualizar local de inmediato
       const fila = materialesData.find(m => String(m.id) === String(id));
-      if (fila) fila.conseguido = valor;
+      if (!fila) return;
+      const orden = ordenesData.find(o => String(o.numero) === String(fila.numero_orden));
+      if (!orden || !['En_Progreso','Pausada'].includes(orden.estado)) {
+        mostrarToast('No puedes modificar materiales en este estado de la orden', 'error');
+        renderMateriales(fila.numero_orden);
+        return;
+      }
+      // Optimista: actualizar local de inmediato
+      fila.conseguido = valor;
       await dbPut('materiales', fila);
       const accion = { tipo:'marcarConseguido', id, valor, ts: ts() };
       if (!isOnline) { await dbPut('cola', accion); mostrarToast('Guardado offline — se sincronizará al recuperar conexión', 'success'); return; }
